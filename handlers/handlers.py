@@ -15,12 +15,9 @@ class Login(BaseHandler):
         self.tokenless = True
 
     def before_post(self):
-        print('WTF?')
         try:
-          print(self.params)
           col_users = self.db['users']
           # col_user_logins = self.db['user_logins']
-          print({'username': self.params['username'], 'password': create_md5(self.params['password'])})
           user_info = col_users.find_one(
               {'username': self.params['username'], 'password': create_md5(self.params['password'])})
           if user_info is None:

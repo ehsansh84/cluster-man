@@ -384,21 +384,18 @@ class BaseHandler(RequestHandler):
 
     def pre_get(self):
         try:
-            print('self.module')
-            print(self.module)
-            print(self.request.uri)
-
             if self.module is None:
                 self.module = self.request.uri.split('/')[2].split('?')[0]
             self.init_method()
             if self.load_params():
-                # if not self.tokenless:
-                #     if self.token_validation():
-                #         if self.load_permissions():
-                #             self.method_access_control()
-                if self.token_validation():
-                    if self.load_permissions():
-                        self.method_access_control()
+                if not self.tokenless:
+                    if self.token_validation():
+                        if self.load_permissions():
+                            if self.method_access_control():
+                                self.add_user_data()
+                    if self.token_validation():
+                        if self.load_permissions():
+                            self.method_access_control()
                 if self.status:
                     if self.get_validation_check():
                         if self.data_casting():
