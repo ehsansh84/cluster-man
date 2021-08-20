@@ -70,7 +70,7 @@ class BaseHandler(RequestHandler):
         self.allow_action = True
         self.url = ''
         self.token = None
-        self.locale = 'fa'
+        self.locale = 'en'
         self.method = ''
         self.app_version = 0
         self.document_count = 0
@@ -135,7 +135,6 @@ class BaseHandler(RequestHandler):
         #     self.output.update({'note_group': self.note_group, 'note_id': self.note_id})
         self.Print(self.note, Colors.LIME)
         try:
-            # print(self.output)
             self.write(self.output)
             if consts.LOG_ACTIVE:
                 self.log_status()
@@ -159,7 +158,6 @@ class BaseHandler(RequestHandler):
             if item in doc.keys():
                 doc[item] = str(doc[item])
                 print('X-Real-ip')
-                print()
                 print(self.request.remote_ip)
 
         log.update({
@@ -200,7 +198,6 @@ class BaseHandler(RequestHandler):
                 self.user_id = '5dbfb57dbbe873941f0ac431'
                 # self.set_output('user', 'token_not_received')
             else:
-                print(self.token)
                 token_info = decode_token(self.token)
                 if token_info is None:
                     self.set_output('user', 'wrong_token')
@@ -362,8 +359,6 @@ class BaseHandler(RequestHandler):
                 pass
             for item in self.params.keys():
                 if item in self.casting['ints']:
-                    # print(item)
-                    # print(self.params[item])
                     self.params[item] = int(self.params[item])
                 elif item in self.casting['dics']:
                     if self.method == 'get':
@@ -412,8 +407,6 @@ class BaseHandler(RequestHandler):
                                 conditions = {}
                                 if 'id_list' in self.conditions.keys():
                                     id_list = []
-                                    # print('ID LIST')
-                                    # print(self.conditions)
                                     for item in self.conditions['id_list']:
                                         id_list.append(ObjectId(item))
                                     conditions['_id'] = {'$in': id_list}
@@ -426,9 +419,7 @@ class BaseHandler(RequestHandler):
                                     else:
                                         conditions[k] = v
                                 self.conditions = conditions
-                                # print('self.conditions')
                                 import json
-                                # print(self.conditions)
                                 del self.params['conditions']
                             if not self.tokenless:
                                 self.add_user_data()
@@ -461,13 +452,9 @@ class BaseHandler(RequestHandler):
                 self.params.update(self.permissions[self.method])
             elif self.method == 'put':
                 temp_params = {}
-                # print(self.params.keys())
                 for item in self.params.keys():
-                    # print('======================')
-                    # print(item)
                     if item not in self.auto_fields:
                         temp_params[item] = self.params[item]
-                        # del self.params[item]
                 self.params = temp_params
                 self.params.update(self.permissions[self.method]['set'])
         except:
@@ -565,13 +552,6 @@ class BaseHandler(RequestHandler):
                                         results = col.find(self.conditions, fields_dic).skip((self.params['page'] - 1) * self.params['page_size'])\
                                             .limit(self.params['page_size']).sort(sort_conditions)
                                 self.document_count = results.count()
-                                # print('results.count()')
-                                # print(results.count())
-                                # print(self.module)
-                                # print(col.name)
-                                # print(self.fields)
-                                # for item in results:
-                                #     print(item)
 
                                 results = self.after_get(results)
                                 self.output['data']['count'] = self.document_count
@@ -696,10 +676,8 @@ class BaseHandler(RequestHandler):
                 # TODO: Remove this code after some time, only for null values sent by retards
                 if self.allow_action:
                     has_null = False
-                    # print(len(self.params.items()))
                     params = {}
                     for k, v in self.params.items():
-                        # print(k)
                         if v in [None, 'null']:
                             self.set_output('field_error', 'null')
                             has_null = True
@@ -736,12 +714,7 @@ class BaseHandler(RequestHandler):
                         if not self.tokenless:
                             if 'put' in self.permissions:
                                 query.update(self.permissions['put']['query'])
-                        # print('query')
-                        # print(query)
-                        # print({'$set': self.params})
                         results = col.update_one(query, {'$set': self.params}).raw_result
-                        # print(results)
-                        # print(col.name)
 
                         if self.conditions == {}:
                             self.params['id'] = id
@@ -805,7 +778,6 @@ class BaseHandler(RequestHandler):
                     else:
                         if self.conditions == {}:
                             self.conditions = {'_id': ObjectId(self.params['id'])}
-                        print(self.conditions)
                         results = col.remove(self.conditions)
                         if results['n'] == 1:
                             # self.set_output('public_operations', 'successful')

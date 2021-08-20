@@ -14,6 +14,7 @@ def insert_users():
             'username': 'admin',
             'password': create_md5('1'),
             'role': 'admin',
+            'confirmed': True
         })
 
 
@@ -115,8 +116,8 @@ def insert_messages():
         {
             'group': 'public_operations',
             'name': 'successful',
-            'code': 401,
-            'status': False,
+            'code': 200,
+            'status': True,
             'en': 'Operation successful'
         },
         {

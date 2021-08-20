@@ -1,6 +1,7 @@
 import sys, os
 sys.path.append('/root/dev/app')
-db_name = 'db_name'
+#db_name = 'db_name'
+from consts import consts
 
 
 def PrintException():
@@ -35,7 +36,7 @@ def db():
         from pymongo import MongoClient
         MONGO_CONNECTION = os.getenv('MONGO')
         con = MongoClient('mongodb://' + MONGO_CONNECTION)
-        return con[db_name]
+        return con[consts.DB_NAME]
     except:
         PrintException()
     return None
@@ -44,7 +45,7 @@ def db():
 def load_messages():
     messages = {}
     try:
-        set_db(db_name)
+        set_db(consts.DB_NAME)
         col_server_messages = db()['server_messages']
         for item in col_server_messages.find():
             group = item['group']
@@ -61,7 +62,7 @@ def load_messages():
 def load_notifications():
     notifications = {}
     try:
-        set_db(db_name)
+        set_db(consts.DB_NAME)
         col_server_notifications = db()['server_notifications']
         for item in col_server_notifications.find():
             group = item['group']
