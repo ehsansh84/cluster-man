@@ -1,7 +1,7 @@
 from base_handler import BaseHandler
 from publics import create_md5, decode_token, encode_token
 from datetime import datetime
-
+import subprocess
 
 class Login(BaseHandler):
     def init_method(self):
@@ -67,27 +67,28 @@ class Login(BaseHandler):
 class Server(BaseHandler):
     def init_method(self):
         self.required = {
-            'post': ['ip', 'status', 'name', 'cluster', 'role'],
+            'post': ['name'],
         }
-        "ip" : "185.255.91.139", "status" : "used", "name" : "node17", "cluster" : "A", "role" : "HA" 
         self.inputs = {
             'post': ['ip', 'status', 'name', 'cluster', 'role'],
         }
+        self.tokenless = True
 
-    def before_post():
-  	command = "ansible-playbook /home/ubuntu/private-playoobks/tabriz_node.yml -e 'name=%s'" % name
-    	output = subprocess.check_output(command, shell=True).decode()
+    def before_post(self):
+        import os
+        import re
+        os.environ["OS_DOMAIN_ID"] = "default"
+        os.environ["OS_DOMAIN_NAME"] = "default"
+        command = "ansible-playbook /home/ubuntu/private-playoobks/tabriz_node.yml -e 'name=%s'" % self.params['name']
+        print(command)
+        output = subprocess.check_output(command, shell=True).decode()
         pat = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
         IP = pat.search(output)
-	self.params['ip'] = IP.group()
-	self.params['status'] = 'free'
-
-        col_servers.insert_one({
-	        "ip": IP.group(),
-        	"status": "free",
-	        "name": name
-	})
+        self.params['ip'] = IP.group()
+        self.params['status'] = 'free'
+        self.output['data']['item']['ip'] = IP.group()
         self.success() 
+        return True
 
 
 class SampleClass(BaseHandler):
