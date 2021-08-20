@@ -59,6 +59,21 @@ class Login(BaseHandler):
             self.fail()
         self.allow_action = False
     
+    
+class Cluster(BaseHandler):
+    def init_method(self):
+        self.required = {
+            'post': ['master_count', 'worker_count', 'name'],
+        }
+        self.inputs = {
+            'post': ['master_count', 'worker_count', 'name'],
+        }
+        self.casting['ints'] = ['master_count', 'worker_count']
+        self.tokenless = True
+
+    def before_post(self):
+        self.params['status'] = 'unconfigured'
+        return True
 
 
 class Server(BaseHandler):

@@ -218,7 +218,7 @@ class BaseHandler(RequestHandler):
 
     def load_permissions(self):
         try:
-            col_users = db()['users']
+            ol_users = db()['users']
             user_info = col_users.find_one({'_id': ObjectId(self.user_id)})
             if user_info is None:
                 self.set_output('user', 'user_not_exists')
