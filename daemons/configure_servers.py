@@ -91,22 +91,53 @@ def config_master():
         os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % master['ip'])
         command = "ansible-playbook ../playbooks/activate-masters.yml -e 'ha_ip=%s' -i %s," % (cluster_info['masters_ha'], master['ip'])
         print(command)
-        #output = subprocess.check_output(command, shell=True).decode()
-        #print(output)
+        output = subprocess.check_output(command, shell=True).decode()
+        print(output)
 
 
-        with open('activate_master.log', 'wb') as f:  # replace 'w' with 'wb' for Python 3
-          process = subprocess.Popen(command, stdout=subprocess.PIPE)
-          for c in iter(lambda: process.stdout.read(1), 'b'):  # replace '' with b'' for Python 3
-            sys.stdout.write(c)
-            f.write(c)
-        f.close()
+#        with open('activate_master.log', 'wb') as f:  # replace 'w' with 'wb' for Python 3
+#          process = subprocess.Popen(command, stdout=subprocess.PIPE)
+#          for c in iter(lambda: process.stdout.read(1), 'b'):  # replace '' with b'' for Python 3
+#            sys.stdout.write(c)
+#            f.write(c)
+#        f.close()
         col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'done'}})
       except:
         col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'error'}})
 
+def get_token():
+    command = "ansible-playbook ../playbooks/token.yml -i %s," % cluster_info['masters'][0]['ip']
+    print(command)
+    output = subprocess.check_output(command, shell=True).decode()
+    print(output)
 
-config_master()
+#get_token()
+
+def config_other_masters():
+  #print(cluster_info) 
+  ips = ""
+  ip_list = [] 
+  for master in cluster_info['masters']:
+    if '0' not in master['name']:
+      col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'pending'}})
+      os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % master['ip'])
+      ips+= master['ip'] + ","
+      ip_list.append(master['ip'])
+  print(ips)
+   
+  try:
+    command = "ansible-playbook ../playbooks/join-master.yml -e 'ha_ip=%s' -i %s" % (cluster_info['masters_ha'], ips)
+    print(command)
+    if ips != ",":
+      output = subprocess.check_output(command, shell=True).decode()
+      print(output)
+      col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
+
+  except:
+    col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
+
+config_other_masters()
+
 #        ips += master['ip'] + ","
 #    if ips != ",":
 #      command = "ansible-playbook join-master.yml -i %s," % ips
