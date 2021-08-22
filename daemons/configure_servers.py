@@ -93,14 +93,6 @@ def config_master():
         print(command)
         output = subprocess.check_output(command, shell=True).decode()
         print(output)
-
-
-#        with open('activate_master.log', 'wb') as f:  # replace 'w' with 'wb' for Python 3
-#          process = subprocess.Popen(command, stdout=subprocess.PIPE)
-#          for c in iter(lambda: process.stdout.read(1), 'b'):  # replace '' with b'' for Python 3
-#            sys.stdout.write(c)
-#            f.write(c)
-#        f.close()
         col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'done'}})
       except:
         col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'error'}})
@@ -136,15 +128,31 @@ def config_other_masters():
   except:
     col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
 
-config_other_masters()
+#config_other_masters()
 
-#        ips += master['ip'] + ","
-#    if ips != ",":
-#      command = "ansible-playbook join-master.yml -i %s," % ips
-#      #print(command)
-#      if print_mode:
-#        print(command)
-#      else:
-#        output = subprocess.check_output(command, shell=True).decode()
-#)
 
+
+def join_workers():
+#    command = "ansible-playbook ../playbooks/token.yml -i %s," % cluster_info['masters'][0]['ip']
+#    print(command)
+#    if print_mode:
+#      print(command)
+#    else:
+#      output = subprocess.check_output(command, shell=True).decode()
+#
+#    worker = get_free_server(CLUSTER_NAME, 'Worker')
+    ips = ""
+    ip_list = []
+    for worker in cluster_info['workers']:
+      ips += worker['ip'] + ","
+      ip_list.append(worker['ip'])
+    col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'pending'}}, multi=True)
+    try:
+      if ips != ",":
+        command = "ansible-playbook ../playbooks/join-worker.yml -i %s" % ips
+        print(command)
+        output = subprocess.check_output(command, shell=True).decode()
+    except:
+      col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
+
+join_workers()

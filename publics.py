@@ -41,6 +41,16 @@ def db():
         PrintException()
     return None
 
+def localdb():
+    try:
+        from pymongo import MongoClient
+        con = MongoClient('mongodb://localhost:27021')
+        return con[consts.DB_NAME]
+    except:
+        PrintException()
+    return None
+
+
 
 def load_messages():
     messages = {}
