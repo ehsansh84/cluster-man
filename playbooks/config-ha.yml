@@ -1,0 +1,22 @@
+- name: Config HA Proxy
+  hosts: all 
+  become: yes
+  tasks:
+    - name: "Configure Load balancer"
+      package:
+        name: haproxy
+    - template:
+        dest: "/etc/haproxy/haproxy.cfg"
+        src: "../temp/haproxy.cfg"
+    - name: systemctl restart
+      systemd: name=systemd-resolved state=restarted         
+    - template:
+        dest: "/etc/hosts"
+        src: "../temp/hosts"
+    - name: systemctl restart
+      systemd: name=haproxy state=restarted         
+        #    - service:
+        #        name: "haproxy"
+        #        state: restarted
+        #          - name: Copy haproxy.cfg
+
