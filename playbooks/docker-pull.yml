@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: pull an image
+    shell: "docker pull {{ image }}"
+    #    docker_image:
+    #      name: traefik:2.5.0
