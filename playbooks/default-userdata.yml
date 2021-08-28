@@ -1,0 +1,19 @@
+#cloud-config
+          system_info:
+            default_user:
+              name: ubuntu
+              lock_passwd: true
+              sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+              ssh_authorized_keys:
+                - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDnVuF/DxOxNaWuwLSsOBuQQLZiThABCyTsq7ipSFAstXZ9XL2bJbC69oZXT0OtI3c3c9YIFqM6DfYYpjsUTojUT7LNmFNjnIfp6D4ieFS59+Zwkk3NNLRgzVQxyLR5wlL1Di4gu9TUA+EtSWeifWTNluJ1JNw4dVhiyWVt/wlxP+oNevIXhHuttxR3jODmQzKGuWziPko4mINcZoyKx6Y4QOa3hVi+8Fesvr/veW+QnP86VCCUS+dbD5tb/Yk6ZZAdf5Mp4LDAOsM/W+NNpT08EvAsxwX7R5y/pblSzPYL5DbA+VZAQ+sR6adBaBPANk5Sk49HgCxc/ffWPjpVhSHx4k61zutoAbZMxf1ipTc2een882/G4P0din4FSsA/Sx9bB7PXMf0sHT7NjRWbDc26aVS6qywseKVP5VBgo6T39X6EtOiO8oOOgHsOnXeNUK8YU7eKQn4G+sEn3FGeiPP/OmR827u/eDRvX9fc3F+fm0Qe7nvDvgz8k6OmIgCLYD8= ehsan@ehsan
+          password: $tr0ngP@$$w0rd
+          chpasswd: { expire: False }
+          ssh_pwauth: True
+          package_update: true
+          disable_root: false
+          packages:
+            - qemu-guest-agent
+          runcmd:
+            - [ systemctl, enable, qemu-guest-agent ]
+            - [ systemctl, start, qemu-guest-agent.service ]
+

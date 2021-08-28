@@ -1,0 +1,19 @@
+#cloud-config
+system_info:
+  default_user:
+    name: ubuntu
+    lock_passwd: true
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+password: ubuntu@123
+chpasswd: { expire: False }
+ssh_pwauth: True
+package_update: true
+disable_root: false
+packages:
+  - qemu-guest-agent
+runcmd:
+  - [ systemctl, enable, qemu-guest-agent ]
+  - [ systemctl, start, qemu-guest-agent.service ]
+bootcmd:
+  - [ cloud-init-per, once, move-second-header, sgdisk, --move-second-header, /dev/vda ]
+  - [ cloud-init-per, once, create-ceph-part, parted, --script, /dev/vda, 'mkpart 2 30GB -1' ]
