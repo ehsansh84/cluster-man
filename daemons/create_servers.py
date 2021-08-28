@@ -17,46 +17,52 @@ db = con['km']
 
 col_cluster = db['cluster']
 col_server = db['server']
-result = col_cluster.find({'status': 'unconfigured'})
-for cluster in result:
-  for i in range(cluster['master_count']):
-    col_server.insert({
-	'name': cluster['name'] + '_' + 'master' + str(i),
-	'status': 'unconfigured',
-	'cluster_name': cluster['name'],
-	'ip': '',
-	'role': 'master',
-	'create_date': datetime.now(),
-	'last_update': datetime.now()
-})
-  for i in range(cluster['worker_count']):
-    col_server.insert({
-	'name': cluster['name'] + '_' + 'worker' + str(i),
-	'status': 'unconfigured',
-	'cluster_name': cluster['name'],
-	'ip': '',
-	'role': 'worker',
-	'create_date': datetime.now(),
-	'last_update': datetime.now()
-})
-  col_server.insert({
-	'name': cluster['name'] + '_' + 'masters_ha',
-	'status': 'unconfigured',
-	'cluster_name': cluster['name'],
-	'ip': '',
-	'role': 'ha',
-	'create_date': datetime.now(),
-	'last_update': datetime.now()
-})
-  col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'pending'}})
+#CLUSTER_NAME = 'hashimoto'
+#result = col_server.find({'ip': ''})
+#for server in result:
+#  for i in range(cluster['master_count']):
+#    col_server.insert({
+#	'name': cluster['name'] + '_' + 'master' + str(i),
+#	'status': 'unconfigured',
+#	'cluster_name': cluster['name'],
+#	'ip': '',
+#	'role': 'master',
+#	'create_date': datetime.now(),
+#	'last_update': datetime.now()
+#})
+#  for i in range(cluster['worker_count']):
+#    col_server.insert({
+#	'name': cluster['name'] + '_' + 'worker' + str(i),
+#	'status': 'unconfigured',
+#	'cluster_name': cluster['name'],
+#	'ip': '',
+#	'role': 'worker',
+#	'create_date': datetime.now(),
+#	'last_update': datetime.now()
+#})
+#  col_server.insert({
+#	'name': cluster['name'] + '_' + 'masters_ha',
+#	'status': 'unconfigured',
+#	'cluster_name': cluster['name'],
+#	'ip': '',
+#	'role': 'ha',
+#	'create_date': datetime.now(),
+#	'last_update': datetime.now()
+#})
+#  col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'pending'}})
 
+import base64
 
 os.environ["OS_DOMAIN_ID"] = "default"
 os.environ["OS_DOMAIN_NAME"] = "default"
 
-for server in col_server.find({'status': 'unconfigured'}):
-  command = "ansible-playbook /home/ubuntu/private-playoobks/tabriz_node.yml -e 'name=%s'" % server['name']
+for server in col_server.find({'ip': ''}):
+  command = "ansible-playbook ../playbooks/tabriz_node.yml -e 'name=%s flavor_id=%s'" % (server['name'],server['flavor_id'])
   print(command)
+  user_data = base64.b64decode(server['user_data'])
+  f = open('../temp/user_data.yml', 'w')
+  f.write(user_data.decode())
+  f.close()
   output = subprocess.check_output(command, shell=True).decode()
   pat = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
   IP = pat.search(output)

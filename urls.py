@@ -1,4 +1,7 @@
 from handlers.handlers import *
+from handlers.login import Login
+from handlers.cluster import Cluster
+from handlers.server import Server
 
 
 url_patterns = [

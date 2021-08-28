@@ -18,13 +18,14 @@ db = con['km']
 col_cluster = db['cluster']
 col_server = db['server']
 
-def load_cluster_info():
+def load_cluster_info(clustername):
   c_info = {
         'masters_ha' : '',
+        'workers_ha' : [],
         'masters': [],
         'workers': []
         }
-  result = col_server.find({'cluster_name': 'tcluster'})
+  result = col_server.find({'cluster_name': clustername})
   for server in result:
     if server['role'] == 'ha':
         c_info['masters_ha'] = server['ip']
@@ -36,10 +37,13 @@ def load_cluster_info():
         c_info['workers'].append({
 					'ip': server['ip'],
 					'name': server['name']})
+    elif server['role'] == 'workers_ha':
+        c_info['workers_ha'].append({
+					'ip': server['ip'],
+					'name': server['name']})
   return c_info
 
-cluster_info = load_cluster_info()
-#print(cluster_info)
+
 def create_ha_config():
   f = open('../templates/hacfg.tmpl')
   ha_template = f.read()
@@ -68,21 +72,18 @@ def create_etc_hosts():
 def config_ha():
   print(col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'pending'}}).raw_result)
   try:
-    command = "ansible-playbook ../playbooks/config-ha.yml -i %s," % cluster_info['masters_haa']
-    #print(command)
+    command = "ansible-playbook ../playbooks/config-ha.yml -i %s," % cluster_info['masters_ha']
+    print(command)
     output = subprocess.check_output(command, shell=True).decode()
-    #print(output)
+    print(output)
     col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'done'}})
   except Exception as e:
-    print(str(e))
+    print("ERROR?>")
     col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'error'}})
 
-#create_ha_config()
-#create_etc_hosts()
-#config_ha()
 
 def config_master():
-  #print(cluster_info) 
+  #print(cluster_infoter(ter(ter() 
   for master in cluster_info['masters']:
     if '0' in master['name']:
       col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'pending'}})
@@ -103,7 +104,6 @@ def get_token():
     output = subprocess.check_output(command, shell=True).decode()
     print(output)
 
-#get_token()
 
 def config_other_masters():
   #print(cluster_info) 
@@ -128,7 +128,6 @@ def config_other_masters():
   except:
     col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
 
-#config_other_masters()
 
 
 
@@ -155,4 +154,19 @@ def join_workers():
     except:
       col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
 
-join_workers()
+
+for cluster in col_cluster.find({"status": "pending"}):
+    cluster_info = load_cluster_info(cluster['name'])
+    #print(cluster['master_count'])
+    if cluster['master_count'] > 1:
+        #create_ha_config()
+        #create_etc_hosts()
+        #config_ha()
+        
+        config_master()
+        #config_other_masters()
+        #join_workers()
+        #get_token()
+    else:
+        print(1)
+        pass

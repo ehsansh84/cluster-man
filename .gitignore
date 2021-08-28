@@ -4,3 +4,4 @@ __pycache__
 *swo
 temp/*
 *log
+playbooks/tabriz_node.yml
