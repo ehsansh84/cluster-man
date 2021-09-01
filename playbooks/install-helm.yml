@@ -1,0 +1,8 @@
+- name: Install helm on a cluster
+  hosts: all 
+  tasks:
+    - name: Install helm
+      snap:
+        name: helm
+        classic: yes
+              
