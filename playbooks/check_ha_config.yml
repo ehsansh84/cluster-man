@@ -1,0 +1,12 @@
+---
+- hosts: all
+  vars:
+    package_names:
+      - haproxy
+  tasks:
+    - name: "Check if haproxy package is installed or not on Debian Linux family"
+      command: dpkg-query -l "{{ item }}"
+      loop: "{{ package_names }}"
+      register: package_check
+      when: ansible_facts['os_family'] == "Debian"
+

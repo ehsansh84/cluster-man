@@ -3,6 +3,7 @@ import re, sys
 import subprocess
 sys.path.append('/app')
 from datetime import datetime
+from functions.ha import config_ha
 #os.environ["MONGO"] = "localhost:27021"
 #ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(ROOT_DIR+ '/..')
@@ -17,6 +18,7 @@ db = con['km']
 
 col_cluster = db['cluster']
 col_server = db['server']
+col_ha = db['ha']
 
 def load_cluster_info(clustername):
   c_info = {
@@ -42,44 +44,6 @@ def load_cluster_info(clustername):
 					'ip': server['ip'],
 					'name': server['name']})
   return c_info
-
-
-def create_ha_config():
-  f = open('../templates/hacfg.tmpl')
-  ha_template = f.read()
-  f.close()
-  
-  backend = ""
-  for server in cluster_info['masters']:
-    backend += "  server %s %s:6443 check fall 3 rise 2\n" % (server['name'],server['ip'])
-  tmpl = ha_template % (cluster_info['masters_ha'], backend)
-  if not os.path.exists('../temp'):
-    os.makedirs('../temp')
-  f = open('../temp/haproxy.cfg', 'w')
-  f.write(tmpl)
-  f.close()
-
-def create_etc_hosts():
-  hosts = ""
-  for server in cluster_info['masters']:
-    hosts += "%s %s\n" % (server['ip'], server['name'])
-  f = open('../temp/hosts', 'w')
-  hosts = "127.0.0.1 localhost\n" + hosts
-  f.write(hosts)
-  f.close()
-#print(cluster_info['masters_ha'])
-
-def config_ha():
-  print(col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'pending'}}).raw_result)
-  try:
-    command = "ansible-playbook ../playbooks/config-ha.yml -i %s," % cluster_info['masters_ha']
-    print(command)
-    output = subprocess.check_output(command, shell=True).decode()
-    print(output)
-    col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'done'}})
-  except Exception as e:
-    print("ERROR?>")
-    col_server.update_one({'ip': cluster_info['masters_ha']}, {'$set': {'status': 'error'}})
 
 
 def config_master():
@@ -157,16 +121,33 @@ def join_workers():
 
 for cluster in col_cluster.find({"status": "pending"}):
     cluster_info = load_cluster_info(cluster['name'])
-    #print(cluster['master_count'])
+    print(cluster['master_count'])
+    print(cluster['name'])
+    print(cluster['master_count'])
     if cluster['master_count'] > 1:
-        #create_ha_config()
-        #create_etc_hosts()
-        #config_ha()
-        
+        ha_id = ''
+        if col_ha.find_one({'name': cluster['name']}) is None:
+            ha_id = col_ha.insert({
+                'name': cluster['name'],
+                'frontend': cluster_info['masters_ha'],
+                'backend': cluster_info['masters'],
+                'status': 'pending'
+            })
+            try:
+                config_ha(cluster_info['masters_ha'], cluster_info['masters'])
+                col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'done'}})
+            except Exception as e:
+                #TODO Good to have error message here
+                print(str(e))
+                print('============================================')
+                print(type(ha_id))
+                print(ha_id)
+                col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'error'}})
+
         config_master()
-        #config_other_masters()
-        #join_workers()
-        #get_token()
+        get_token()
+        config_other_masters()
+        join_workers()
     else:
         print(1)
         pass
