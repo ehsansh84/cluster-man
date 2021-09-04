@@ -5,3 +5,5 @@ __pycache__
 temp/*
 *log
 playbooks/tabriz_node.yml
+afranet.json
+tabriz.json

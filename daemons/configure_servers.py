@@ -52,6 +52,7 @@ def config_master():
     if '0' in master['name']:
       col_server.update_one({'ip': master['ip']}, {'$set': {'status': 'pending'}})
       try:
+        print('========================================')
         print(master)
         os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % master['ip'])
         command = "ansible-playbook ../playbooks/activate-masters.yml -e 'ha_ip=%s' -i %s," % (cluster_info['masters_ha'], master['ip'])
@@ -115,15 +116,14 @@ def join_workers():
         command = "ansible-playbook ../playbooks/join-worker.yml -i %s" % ips
         print(command)
         output = subprocess.check_output(command, shell=True).decode()
+        col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
     except:
       col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
 
 
 for cluster in col_cluster.find({"status": "pending"}):
     cluster_info = load_cluster_info(cluster['name'])
-    print(cluster['master_count'])
-    print(cluster['name'])
-    print(cluster['master_count'])
+    print('Goins go config cluster: %s' % cluster['name'])
     if cluster['master_count'] > 1:
         ha_id = ''
         if col_ha.find_one({'name': cluster['name']}) is None:
@@ -133,19 +133,19 @@ for cluster in col_cluster.find({"status": "pending"}):
                 'backend': cluster_info['masters'],
                 'status': 'pending'
             })
-            try:
-                config_ha(cluster_info['masters_ha'], cluster_info['masters'])
-                col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'done'}})
-            except Exception as e:
-                #TODO Good to have error message here
-                print(str(e))
-                print('============================================')
-                print(type(ha_id))
-                print(ha_id)
-                col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'error'}})
+        try:
+            config_ha(cluster_info['masters_ha'], cluster_info['masters'])
+            col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'done'}})
+        except Exception as e:
+            #TODO Good to have error message here
+            print(str(e))
+            print('============================================')
+            print(type(ha_id))
+            print(ha_id)
+            col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'error'}})
 
-        config_master()
-        get_token()
+        #config_master()
+        #get_token()
         config_other_masters()
         join_workers()
     else:

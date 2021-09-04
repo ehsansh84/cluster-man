@@ -5,7 +5,7 @@ db = con['km']
 col_cluster = db['cluster']
 col_server = db['server']
 col_ha = db['ha']
-import sys, os
+import sys, os, subprocess
 
 def create_ha_config(ha, masters):
     try:
@@ -60,6 +60,7 @@ def config_ha(ha, masters):
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print(exc_type, fname, exc_tb.tb_lineno)
+        print(str(e))
         col_server.update_one({'ip': ha}, {'$set': {'status': 'error'}})
 
 
