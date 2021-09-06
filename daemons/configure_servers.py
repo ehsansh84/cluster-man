@@ -133,7 +133,7 @@ def join_workers(cluster_name):
 #      output = subprocess.check_output(command, shell=True).decode()
 #
 #    worker = get_free_server(CLUSTER_NAME, 'Worker')
-    if servers.count() == 0:
+    if servers.count_documents() == 0:
         print('No workers to joins')
     else:
         ips = ""
@@ -156,7 +156,6 @@ print('HELLO!')
 for cluster in col_cluster.find({"status": {'$in': ["pending", "error"]}}):
     try:
         cluster_error = False
-        #cluster_info = load_cluster_info(cluster['name'])
         print('Goins go config cluster: %s' % cluster['name'])
         #servers = col_server.find({'cluster_name': cluster['name']})
         if cluster['master_count'] > 1:
@@ -165,13 +164,6 @@ for cluster in col_cluster.find({"status": {'$in': ["pending", "error"]}}):
                 col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'error', 'note': 'No HA available!'}})
                 print('HA not available')
                 break
-           # if col_ha.find_one({'name': cluster['name']}) is None:
-           #     ha_id = col_ha.insert({
-           #         'name': cluster['name'],
-           #         'frontend': cluster_info['masters_ha'],
-           #         'backend': cluster_info['masters'],
-           #         'status': 'pending'
-           #     })
             try:
                 if ha['status'] not in ['done', 'pending']:
                     masters = col_server.find({'cluster_name': cluster['name'], 'role': {'$in': ['master', 'main_master']}})
