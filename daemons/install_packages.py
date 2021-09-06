@@ -19,32 +19,7 @@ col_cluster = db['cluster']
 col_server = db['server']
 col_ha = db['ha']
 
-def load_cluster_info(clustername):
-  c_info = {
-        'masters_ha' : '',
-        'workers_ha' : [],
-        'masters': [],
-        'workers': []
-        }
-  result = col_server.find({'cluster_name': clustername})
-  for server in result:
-    if server['role'] == 'ha':
-        c_info['masters_ha'] = server['ip']
-    elif server['role'] == 'master':
-        c_info['masters'].append({
-					'ip': server['ip'],
-					'name': server['name']})
-    elif server['role'] == 'worker':
-        c_info['workers'].append({
-					'ip': server['ip'],
-					'name': server['name']})
-    elif server['role'] == 'workers_ha':
-        c_info['workers_ha'].append({
-					'ip': server['ip'],
-					'name': server['name']})
-  return c_info
 
-cluster_info = load_cluster_info('ehsan')
 
 def install_helm():
   #print(cluster_infoter(ter(ter() 

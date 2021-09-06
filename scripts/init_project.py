@@ -3,7 +3,7 @@ sys.path.append('/app')
 from publics import db, create_md5, set_db
 from consts import consts
 set_db(consts.DB_NAME)
-
+print(consts.DB_NAME)
 
 def insert_users():
     col_users = db()['users']
@@ -22,6 +22,13 @@ def insert_messages():
     col_server_messages = db()['server_messages']
     col_server_messages.drop()
     col_server_messages.insert_many([
+        {
+            'group': 'cluster',
+            'name': 'name_exists',
+            'code': 401,
+            'status': False,
+            'en': 'Cluster name already exists!'
+        },
         {
             'group': 'user',
             'name': 'token_not_received',
