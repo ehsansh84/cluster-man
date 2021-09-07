@@ -105,28 +105,41 @@ def get_token(main_master_ip):
 
 
 def join_workers(cluster_name):
-    servers = col_server.find({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
-    if servers.count_documents() == 0:
-        print('No workers to joins')
-    else:
-        ips = ""
-        ip_list = []
-        for worker in servers:
-          ips += worker['ip'] + ","
-          ip_list.append(worker['ip'])
-        col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'pending'}}, multi=True)
-        try:
-          if ips != ",":
-            command = "ansible-playbook ../playbooks/join-worker.yml -i %s" % ips
-            print(command)
-            output = subprocess.check_output(command, shell=True).decode()
-            col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
-        except:
-          # cluster_error = True
-          col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
+    try:
+        print(f'Preparing to join workers to cluster {cluster_name}')
+        servers = col_server.find({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
+        print('test...')
+        if servers.count() == 0:
+            print('No workers to joins')
+        else:
+            print(f'Joining {servers.count()} workers')
+            ips = ""
+            ip_list = []
+            for worker in servers:
+              ips += worker['ip'] + ","
+              ip_list.append(worker['ip'])
+            col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'pending'}}, multi=True)
+            try:
+              if ips != ",":
+                command = "ansible-playbook ../playbooks/join-worker.yml -i %s" % ips
+                print(command)
+                output = subprocess.check_output(command, shell=True).decode()
+                col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
+            except:
+              # cluster_error = True
+              col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        print(str(e))
+        print(" :::: cloud connection failed\n")
+
+
 
 print('HELLO!')
-for cluster in col_cluster.find({"status": {'$in': ["pending", "error"]}}):
+#for cluster in col_cluster.find({"status": {'$in': ["pending", "error"]}}):
+for cluster in col_cluster.find():
     try:
         cluster_error = False
         print('Goins go config cluster: %s' % cluster['name'])
