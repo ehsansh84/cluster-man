@@ -145,8 +145,6 @@ def join_workers(cluster_name):
         print('Error while joining workers!')
         PrintException()
 
-
-
 print('HELLO!')
 #for cluster in col_cluster.find({"status": {'$in': ["pending", "error"]}}):
 for cluster in col_cluster.find():
