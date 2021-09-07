@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from publics import PrintException
 con = MongoClient('mongodb://localhost:27021')
 db = con['km']
 
@@ -21,15 +22,17 @@ def create_ha_config(ha, masters):
         backend += "  server %s %s:6443 check fall 3 rise 2\n" % (server['name'],server['ip'])
       tmpl = body_template % (ha, backend)
       tmpl = head_template + tmpl
-      if not os.path.exists('../../temp'):
-        os.makedirs('../../temp')
+      if not os.path.exists('../temp'):
+        os.makedirs('../temp')
       f = open('../temp/haproxy.cfg', 'w')
       f.write(tmpl)
       f.close()
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
+        PrintException()
+        # exc_type, exc_obj, exc_tb = sys.exc_info()
+        # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        # print(exc_type, fname, exc_tb.tb_lineno)
+
 
 def create_etc_hosts(masters):
     try:
@@ -41,9 +44,10 @@ def create_etc_hosts(masters):
       f.write(hosts)
       f.close()
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
+        PrintException()
+        # exc_type, exc_obj, exc_tb = sys.exc_info()
+        # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        # print(exc_type, fname, exc_tb.tb_lineno)
 #print(cluster_info['masters_ha'])
 
 def config_ha(ha, masters):
@@ -51,18 +55,19 @@ def config_ha(ha, masters):
   create_etc_hosts(masters)
   print(col_server.update_one({'ip': ha}, {'$set': {'status': 'pending'}}).raw_result)
   try:
-    command = "ansible-playbook ../playbooks/config-ha.yml -i %s," % ha
+    command = "ansible-playbook ../playbooks/config-ha.yml -i ubuntu@%s," % ha
     print(command)
     output = subprocess.check_output(command, shell=True).decode()
     print(output)
     col_server.update_one({'ip': ha}, {'$set': {'status': 'done'}})
     return True
   except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
-        print(str(e))
-        col_server.update_one({'ip': ha}, {'$set': {'status': 'error'}})
-        return False
+      PrintException()
+        # exc_type, exc_obj, exc_tb = sys.exc_info()
+        # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        # print(exc_type, fname, exc_tb.tb_lineno)
+        # print(str(e))
+      col_server.update_one({'ip': ha}, {'$set': {'status': 'error'}})
+      return False
 
 
