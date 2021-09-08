@@ -1,6 +1,7 @@
 FROM python
 ENV PYTHONUNBUFFERED 1
 RUN mkdir /app
+RUN mkdir /temp
 RUN mkdir /images
 WORKDIR /app
 #RUN cat "host_key_checking = False" >> /etc/ansible/ansible.cfg
