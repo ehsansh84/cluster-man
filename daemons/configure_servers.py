@@ -119,7 +119,7 @@ def get_token(main_master_ip):
 def join_workers(cluster_name):
     try:
         print(f'Preparing to join workers to cluster {cluster_name}')
-        servers = col_server.find({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
+        servers = col_server.find(z)
         print('test...')
         print({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
         if servers.count() == 0:
@@ -152,39 +152,35 @@ for cluster in col_cluster.find():
         cluster_error = False
         print('Goins go config cluster: %s' % cluster['name'])
         #servers = col_server.find({'cluster_name': cluster['name']})
-        if cluster['master_count'] > 1:
-            ha = col_server.find_one({'cluster_name': cluster['name'], 'role': 'ha'})
-            if ha is None:
-                col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'error', 'note': 'No HA available!'}})
-                print('HA not available')
-                break
-            try:
-                if ha['status'] not in ['done', 'pending']:
-                    masters = col_server.find({'cluster_name': cluster['name'], 'role': {'$in': ['master', 'main_master']}})
-                    masters_list = [{'name': item['name'], 'ip': item['ip']} for item in masters]
-                    print(masters_list)
-                    print('Start configuring HA')
-                    if config_ha(ha['ip'], masters_list):
-                        col_ha.update_one({'_id': ha['_id']}, {'$set': {'status': 'done'}})
-                        print('HA has been configured')
-                    else:
-                        print('HA Can not be configured!')
+        # if cluster['master_count'] > 1:
+        ha = col_server.find_one({'cluster_name': cluster['name'], 'role': 'ha'})
+        if ha is None:
+            col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'error', 'note': 'No HA available!'}})
+            print('HA not available')
+            break
+        try:
+            if ha['status'] not in ['done', 'pending']:
+                masters = col_server.find({'cluster_name': cluster['name'], 'role': {'$in': ['master', 'main_master']}})
+                masters_list = [{'name': item['name'], 'ip': item['ip']} for item in masters]
+                print(masters_list)
+                print('Start configuring HA')
+                if config_ha(ha['ip'], masters_list):
+                    col_ha.update_one({'_id': ha['_id']}, {'$set': {'status': 'done'}})
+                    print('HA has been configured')
                 else:
-                    print('HA is done or pending!')
-            except Exception as e:
-                cluster_error = True
-                #TODO Good to have error message here
-                print(str(e))
-                print('============================================')
-                #col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'error'}})
-            config_master(cluster['name'], ha['ip'])
-            #get_token()
-            #config_other_masters()
-            join_workers(cluster['name'])
-        else:
-            print(1)
-            pass
-
+                    print('HA Can not be configured!')
+            else:
+                print('HA is done or pending!')
+        except Exception as e:
+            cluster_error = True
+            #TODO Good to have error message here
+            print(str(e))
+            print('============================================')
+            #col_ha.update_one({'_id': ha_id}, {'$set': {'status': 'error'}})
+        config_master(cluster['name'], ha['ip'])
+        #get_token()
+        #config_other_masters()
+        join_workers(cluster['name'])
     except:
         cluster_error = True
     cluster_status = 'error' if cluster_error else 'done'
