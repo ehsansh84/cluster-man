@@ -83,7 +83,7 @@ class Cluster(BaseHandler):
                 col_server = self.db['server']
                 main_master = col_server.find_one({'role': 'main_master', 'cluster_name': self.params['cluster_name']})
                 if main_master is not None:
-                    command = "ansible-playbook /app/playbooks/install-helm.yml -i %s," % main_master['ip']
+                    command = "ansible-playbook /app/playbooks/install-helm.yml -i ubuntu@%s," % main_master['ip']
                     print(command)
                     output = subprocess.check_output(command, shell=True).decode()
                     print(output)
@@ -99,7 +99,7 @@ class Cluster(BaseHandler):
                 col_server = self.db['server']
                 main_master = col_server.find_one({'role': 'main_master', 'cluster_name': self.params['cluster_name']})
                 if main_master is not None:
-                    command = "ansible-playbook /app/playbooks/install-traefik.yml -i %s," % main_master['ip']
+                    command = "ansible-playbook /app/playbooks/install-traefik.yml -i ubuntu@%s," % main_master['ip']
                     print(command)
                     output = subprocess.check_output(command, shell=True).decode()
                     print(output)
