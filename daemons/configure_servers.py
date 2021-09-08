@@ -6,15 +6,15 @@ from functions.ha import config_ha
 from publics import PrintException
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from publics import db
 
+# from pymongo import MongoClient
+# con = MongoClient('mongodb://localhost:27021')
+# db = con['km']
 
-from pymongo import MongoClient
-con = MongoClient('mongodb://localhost:27021')
-db = con['km']
-
-col_cluster = db['cluster']
-col_server = db['server']
-col_ha = db['ha']
+col_cluster = db()['cluster']
+col_server = db()['server']
+col_ha = db()['ha']
 
 
 def get_masters(cluster_name):
@@ -43,7 +43,7 @@ def config_main_master(ip, ha_ip):
     try:
         print('Going to configure main master...')
         os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % ip)
-        command = "ansible-playbook ../playbooks/activate-masters.yml -e 'ha_ip=%s' -i ubuntu@%s," % (ha_ip, ip)
+        command = "ansible-playbook /app/playbooks/activate-masters.yml -e 'ha_ip=%s' -i ubuntu@%s," % (ha_ip, ip)
         print(command)
         output = subprocess.check_output(command, shell=True).decode()
         print(output)
@@ -58,7 +58,7 @@ def config_main_master(ip, ha_ip):
 
 def join_masters(ha_ip, ips, ip_list):
     try:
-        command = "ansible-playbook ../playbooks/join-master.yml -e 'ha_ip=%s' -i %s" % (ha_ip, ips)
+        command = "ansible-playbook /app/playbooks/join-master.yml -e 'ha_ip=%s' -i %s" % (ha_ip, ips)
         print(command)
         if ips != ",":
             output = subprocess.check_output(command, shell=True).decode()
@@ -110,7 +110,7 @@ def config_master(cluster_name, ha_ip):
   
 
 def get_token(main_master_ip):
-    command = "ansible-playbook ../playbooks/token.yml -i ubuntu@%s," % main_master_ip
+    command = "ansible-playbook /app/playbooks/token.yml -i ubuntu@%s," % main_master_ip
     print(command)
     output = subprocess.check_output(command, shell=True).decode()
     print(output)
@@ -134,7 +134,7 @@ def join_workers(cluster_name):
             col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'pending'}}, multi=True)
             try:
               if ips != ",":
-                command = "ansible-playbook ../playbooks/join-worker.yml -i ubuntu@%s" % ips
+                command = "ansible-playbook /app/playbooks/join-worker.yml -i ubuntu@%s" % ips
                 print(command)
                 output = subprocess.check_output(command, shell=True).decode()
                 col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)

@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from auth import get_token
 import threading
+from publics import db
 from bson import ObjectId
 sys.path.append('/app')
 
@@ -60,12 +61,12 @@ def create_server(token, _id, name, flavor_id, image_id, user_data):
 token = get_token()
 print(token)
 
-from pymongo import MongoClient
-con = MongoClient('mongodb://localhost:27021')
-db = con['km']
+# from pymongo import MongoClient
+# con = MongoClient('mongodb://localhost:27021')
+# db = con['km']
 
-col_cluster = db['cluster']
-col_server = db['server']
+col_cluster = db()['cluster']
+col_server = db()['server']
 
 for server in col_server.find({'ip': '', 'status': {'$ne': 'creating'}}):
     try:

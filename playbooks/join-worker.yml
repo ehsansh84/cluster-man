@@ -3,6 +3,6 @@
   become: yes
   tasks:
   - name: Copying token to worker nodes
-    copy: src=../temp/joinworker.sh dest=joinworker.sh
+    copy: src=/temp/joinworker.sh dest=joinworker.sh
   - name: join
     shell: sh joinworker.sh

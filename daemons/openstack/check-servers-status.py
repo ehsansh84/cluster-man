@@ -8,6 +8,7 @@ from auth import get_token
 sys.path.append('/app')
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from publics import db
 
 f = open("tabriz.json")
 #f = open("afranet.json")
@@ -22,12 +23,12 @@ token = get_token()
 print(token)
 headers = {"X-Auth-Token": token, "Content-Type": "application/json"}
 
-from pymongo import MongoClient
-con = MongoClient('mongodb://localhost:27021')
-db = con['km']
+# from pymongo import MongoClient
+# con = MongoClient('mongodb://localhost:27021')
+# db = con['km']
 
-col_cluster = db['cluster']
-col_server = db['server']
+col_cluster = db()['cluster']
+col_server = db()['server']
 import base64
 
 for server in col_server.find({'status': {'$in': ['creating', '']}}):

@@ -25,7 +25,7 @@ def install_helm():
   #print(cluster_infoter(ter(ter() 
       print(cluster_info['masters'][0]['ip'])
       try:
-        command = "ansible-playbook ../playbooks/install-helm.yml -i %s," % cluster_info['masters'][0]['ip']
+        command = "ansible-playbook /app/playbooks/install-helm.yml -i %s," % cluster_info['masters'][0]['ip']
         print(command)
         output = subprocess.check_output(command, shell=True).decode()
         print(output)

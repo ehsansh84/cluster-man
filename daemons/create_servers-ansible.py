@@ -57,10 +57,10 @@ os.environ["OS_DOMAIN_ID"] = "default"
 os.environ["OS_DOMAIN_NAME"] = "default"
 
 for server in col_server.find({'ip': ''}):
-  command = "ansible-playbook ../playbooks/tabriz_node.yml -e 'name=%s flavor_id=%s'" % (server['name'],server['flavor_id'])
+  command = "ansible-playbook /app/playbooks/tabriz_node.yml -e 'name=%s flavor_id=%s'" % (server['name'],server['flavor_id'])
   print(command)
   user_data = base64.b64decode(server['user_data'])
-  f = open('../temp/user_data.yml', 'w')
+  f = open('/temp/user_data.yml', 'w')
   f.write(user_data.decode())
   f.close()
   output = subprocess.check_output(command, shell=True).decode()
