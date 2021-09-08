@@ -16,19 +16,9 @@ class Server(BaseHandler):
         self.casting['lists'] = ['server_ips']
 
     def before_post(self):
-        #import os
-        #import re
-        ##TODO: there must be a default user data
-        #os.environ["OS_DOMAIN_ID"] = "default"
-        #os.environ["OS_DOMAIN_NAME"] = "default"
-        #command = "ansible-playbook /home/ubuntu/private-playoobks/tabriz_node.yml -e 'name=%s'" % self.params['name']
-        #print(command)
-        #output = subprocess.check_output(command, shell=True).decode()
-        #pat = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
-        #IP = pat.search(output)
-        #self.params['ip'] = IP.group()
+        if 'ip' not in self.params:
+            self.params['ip'] = ''
         self.params['status'] = 'unconfigured'
-        #self.output['data']['item']['ip'] = IP.group()
         col_cluster = self.db['cluster']
         col_cluster.update_one({'name': self.params['cluster_name']}, {'$set': {'status': 'pending'}})
         self.success()
