@@ -2,14 +2,14 @@
   hosts: all 
   become: yes
   tasks:
-    - name: "Do it!"
+    - name: "kubeadm init"
       shell: "kubeadm init --control-plane-endpoint={{ ha_ip }}:6443 --upload-certs"
-    - name: Export2
+    - name: kubectl version
       shell: kubectl version | base64 | tr -d '\n'
       register: output
     - name: Print
       debug: msg="kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version={{ output.stdout }} --kubeconfig=/etc/kubernetes/admin.conf"
-    - name: Exec all
+    - name: kubectl apply
       shell: "kubectl apply -f https://cloud.weave.works/k8s/net?k8s-version={{ output.stdout }} --insecure-skip-tls-verify --kubeconfig=/etc/kubernetes/admin.conf"
       become: yes
       register: output2

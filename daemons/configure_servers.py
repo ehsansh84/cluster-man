@@ -119,7 +119,7 @@ def get_token(main_master_ip):
 def join_workers(cluster_name):
     try:
         print(f'Preparing to join workers to cluster {cluster_name}')
-        servers = col_server.find(z)
+        servers = col_server.find({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
         print('test...')
         print({'cluster_name': cluster_name, 'role': 'worker', 'status': {'$nin': ['done', 'pending']}, 'ip': {'$ne': ''}})
         if servers.count() == 0:
