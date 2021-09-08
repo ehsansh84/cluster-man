@@ -60,16 +60,17 @@ class Cluster(BaseHandler):
         })
         
         # if self.params['master_count'] > 1:
+        print('CREATE an HA')
         col_server.insert({
             'name': self.params['name'] + '_' + 'masters_ha',
             'status': 'unconfigured',
             'cluster_name': self.params['name'],
             'ip': '',
             'role': 'ha',
-		'flavor_id': self.params['masters_flavor_id'],
-		'user_data': self.params['masters_user_data'],
-                'create_date': datetime.now(),
-                'last_update': datetime.now()
+            'flavor_id': self.params['masters_flavor_id'],
+            'user_data': self.params['masters_user_data'],
+            'create_date': datetime.now(),
+            'last_update': datetime.now()
         })
         col_cluster.update_one({'name': self.params['name']}, {'$set': {'status': 'pending'}})
 
