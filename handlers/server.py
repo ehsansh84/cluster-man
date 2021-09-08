@@ -24,7 +24,6 @@ class Server(BaseHandler):
         self.success()
         return True
 
-
     def before_put(self):
         if 'join_as_worker' in self.params:
             try:

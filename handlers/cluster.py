@@ -59,13 +59,13 @@ class Cluster(BaseHandler):
                 'last_update': datetime.now()
         })
         
-        if self.params['master_count'] > 1:
-            col_server.insert({
-                'name': self.params['name'] + '_' + 'masters_ha',
-                'status': 'unconfigured',
-                'cluster_name': self.params['name'],
-                'ip': '',
-                'role': 'ha',
+        # if self.params['master_count'] > 1:
+        col_server.insert({
+            'name': self.params['name'] + '_' + 'masters_ha',
+            'status': 'unconfigured',
+            'cluster_name': self.params['name'],
+            'ip': '',
+            'role': 'ha',
 		'flavor_id': self.params['masters_flavor_id'],
 		'user_data': self.params['masters_user_data'],
                 'create_date': datetime.now(),
