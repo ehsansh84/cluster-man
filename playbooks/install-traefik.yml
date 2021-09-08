@@ -5,4 +5,4 @@
   - name: Add traefik repository
     shell: helm repo add traefik https://helm.traefik.io/traefik
   - name: Install Traefik using helm
-    shell: helm install traefik/traefik --set service.type=NodePort
+    shell: helm install traefik traefik/traefik --set service.type=NodePort

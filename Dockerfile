@@ -14,7 +14,7 @@ ENV OS_DOMAIN_ID=default
 # RUN export OS_DOMAIN_ID=default
 COPY requirements.txt /app/
 RUN pip install -r requirements.txt
-COPY . /app/
 RUN apt update
 RUN apt install -y ansible
+COPY . /app/
 CMD python boot.py
