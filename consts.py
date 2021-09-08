@@ -16,4 +16,6 @@ class consts(object):
     DB_NAME = PROJECT_NAME
     ODP_IMAGES = ODP_ROOT + 'images/'
     TEST_MODE = False
+    #SERVER_DATA = 'tabriz.json'
+    SERVER_DATA = 'afranet.json'
 

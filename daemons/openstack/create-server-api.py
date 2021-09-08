@@ -6,12 +6,12 @@ import json
 from datetime import datetime
 from auth import get_token
 import threading
-from publics import db
+from publics import db, consts
 from bson import ObjectId
 sys.path.append('/app')
 
 #f = open("afranet.json")
-f = open("tabriz.json")
+f = open(consts.SERVER_DATA)
 data = json.load(f)
 #print(data)
 f.close()

@@ -8,9 +8,10 @@ from auth import get_token
 sys.path.append('/app')
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from publics import db
+from publics import db, consts
 
-f = open("tabriz.json")
+f = open(consts.SERVER_DATA)
+# f = open("tabriz.json")
 #f = open("afranet.json")
 data = json.load(f)
 #print(data)

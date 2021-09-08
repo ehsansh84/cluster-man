@@ -4,9 +4,11 @@ import requests
 import json
 from datetime import datetime
 sys.path.append('/app')
+from publics import consts
 
+f = open(consts.SERVER_DATA)
 #f = open("afranet.json")
-f = open("tabriz.json")
+# f = open("tabriz.json")
 data = json.load(f)
 f.close()
 
