@@ -5,6 +5,9 @@ import json
 from datetime import datetime
 sys.path.append('/app')
 from publics import consts
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 f = open(consts.SERVER_DATA)
 #f = open("afranet.json")

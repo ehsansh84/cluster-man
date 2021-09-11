@@ -7,6 +7,9 @@ from datetime import datetime
 from auth import get_token
 import threading
 from publics import db, consts
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 from bson import ObjectId
 sys.path.append('/app')
 
