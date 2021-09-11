@@ -89,6 +89,9 @@ def config_master(cluster_name, ha_ip):
             if main_master['ip'] == '':
                 print('Main master have not an IP')
                 exit()
+        print('1111111111111111111111111111111111111111')
+        print(masters)
+        print(main_master['ip'])
         if masters == []:
             print('No unconfigured masters detected!')
         else:
@@ -104,7 +107,10 @@ def config_master(cluster_name, ha_ip):
                 ips += "ubuntu@" + master['ip'] + ","
                 ip_list.append(master['ip'])
             print(ips)
-            join_masters(ha_ip, ips, ip_list)
+        #TODO: Better to check if there is a token or not
+        #TODO Check if there is a worker
+        get_token(main_master['ip'])
+        join_masters(ha_ip, ips, ip_list)
     except:
         PrintException()
   
