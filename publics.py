@@ -51,7 +51,6 @@ def localdb():
     return None
 
 
-
 def load_messages():
     messages = {}
     try:

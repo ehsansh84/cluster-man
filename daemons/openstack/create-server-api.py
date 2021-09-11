@@ -36,9 +36,12 @@ def create_server(token, _id, name, flavor_id, image_id, user_data):
         }
     headers = {"X-Auth-Token": token, "Content-Type": "application/json"}
     try:
+        # print(f'server name: {name}')
         response = requests.post(
             link, json=params, headers=headers, verify=False
         ).json()
+        # print('posted!')
+        # print(response)
         if "server" not in response:
             serverId = "NO"
         else:
