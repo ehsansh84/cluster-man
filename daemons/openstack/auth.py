@@ -1,9 +1,10 @@
-import json
 import sys
-import requests
 sys.path.append('/app')
+import json
+import requests
 from publics import consts, PrintException
-from publics import logger
+# from publics import logger
+from log_tools import log
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -16,7 +17,7 @@ auth_base_url = "https://%s:5000/v3" % data['server_ip']
 
 
 def get_token():
-    headers = {"content-type":"application/json"}
+    headers = {"content-type": "application/json"}
     link = auth_base_url + '/auth/tokens'
     params = {
         "auth": {
@@ -36,15 +37,15 @@ def get_token():
         }
     }
     try:
-        logger.info('Going to get a token from OpenStack...')
+        log.info('Going to get a token from OpenStack...')
         response = requests.post(link, json=params, verify=False, headers=headers)
         if "X-Subject-Token" not in response.headers:
             return ""
         else:
             token = response.headers["X-Subject-Token"]
-            logger.info('Authentication done.')
+            log.info('Authentication done.')
             return token
     except Exception as e:
-        logger.error(f'Getting token failed!')
+        log.error(f'Getting token failed!')
         PrintException()
 
