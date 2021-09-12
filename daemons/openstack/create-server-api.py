@@ -46,11 +46,13 @@ def create_server(token, _id, name, flavor_id, image_id, user_data):
         }
     headers = {"X-Auth-Token": token, "Content-Type": "application/json"}
     try:
-        log.info(f'Making a request to {link} with params {params} and headers {headers}')
+        log.info(f'Making a request to {link}')
+        log.debug(f'With params {params} and headers {headers}')
         r = requests.post(
             link, json=params, headers=headers, verify=False
         )
-        log.info(f'Request is done and status code is {r.status_code} and response is {r.json()}')
+        log.info(f'Request is done and status code is {r.status_code}')
+        log.debug(f'Response is {r.json()}')
         # print(r.text)
         response = r.json()
         # print('posted!')
