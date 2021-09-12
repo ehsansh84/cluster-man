@@ -6,7 +6,7 @@ import threading
 import requests
 import urllib3
 from auth import get_token
-from publics import db, consts
+from publics import db, consts, PrintException
 from log_tools import log
 # log.debug("FUCK?!")
 # log.debug("A quirky message only developers care about")
@@ -72,6 +72,7 @@ def create_server(token, _id, name, flavor_id, image_id, user_data):
                 # print(str(e))
     except Exception as e:
         log.error(f'Error while creating server: {str(e)}')
+
         # exc_type, exc_obj, exc_tb = sys.exc_info()
         # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         # print(exc_type, fname, exc_tb.tb_lineno)
@@ -97,6 +98,7 @@ for server in col_server.find({'ip': '', 'status': {'$ne': 'creating'}}):
         x.start()
     except Exception as e:
         log.error(f'Error while getting server_id: {str(e)}')
+        PrintException()
         # print('ERROR HERE')
         # exc_type, exc_obj, exc_tb = sys.exc_info()
         # fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
