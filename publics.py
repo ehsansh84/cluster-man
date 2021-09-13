@@ -136,7 +136,7 @@ def get_platform_data(name):
         # f = open(f'/app/daemons/openstack/{name}.json')
         # import os
         # log.info(os.getcwd())
-        f = open(f'/home/ehsan/dev/cluster-man/daemons/openstack/{name}.json')
+        f = open(f'{consts.PROJECT_DIR}/daemons/openstack/{name}.json')
         data = load(f)
         f.close()
         log.info(f'Platform data loaded for {name}')
