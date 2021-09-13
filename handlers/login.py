@@ -1,7 +1,6 @@
-from base_handler import BaseHandler
-from publics import create_md5, decode_token, encode_token
 from datetime import datetime
-import subprocess
+from base_handler import BaseHandler
+from publics import create_md5, encode_token
 
 
 class Login(BaseHandler):
@@ -36,7 +35,6 @@ class Login(BaseHandler):
                   self.user_id = user_info['id']
                   # TODO: this should be in permission system
                   if 'last_update' in user_info: del user_info['last_update']
-                  if 'password_pure' in user_info: del user_info['password_pure']
                   if 'password' in user_info: del user_info['password']
                   if 'activation_code' in user_info: del user_info['activation_code']
                   if '_id' in user_info: del user_info['_id']

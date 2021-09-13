@@ -2,10 +2,12 @@ import os
 import subprocess
 import sys
 sys.path.append('/app')
+sys.path.append('/home/ehsan/dev/cluster-man/')
+from consts import consts
 from functions.ha import config_ha
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from publics import db
+from publics import db, ExceptionLine
 from log_tools import log
 
 col_cluster = db()['cluster']
@@ -29,7 +31,7 @@ def get_masters(cluster_name):
         for server in servers:
             masters.append({'name': server['name'], 'ip': server['ip']})
     except:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f"Error while getting server_id: {ExceptionLine()}")
         # PrintException()
     # print(f'INSIDE {main_master_configured}')
     return main_master, masters, main_master_configured
@@ -41,7 +43,7 @@ def config_main_master(ip, ha_ip):
         log.info(f'Going to configure main master {ip} using HA {ha_ip}')
         # print('')
         os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % ip)
-        command = "ansible-playbook /app/playbooks/activate-masters.yml -e 'ha_ip=%s' -i ubuntu@%s," % (ha_ip, ip)
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/activate-masters.yml -e 'ha_ip=%s' -i ubuntu@%s," % (ha_ip, ip)
         log.info(command)
         # print(command)
         output = subprocess.check_output(command, shell=True).decode()
@@ -49,7 +51,7 @@ def config_main_master(ip, ha_ip):
         col_server.update_one({'ip': ip}, {'$set': {'status': 'done'}})
         log.info('Main master has been configured.')
     except:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
         # cluster_error = True
         col_server.update_one({'ip': ip}, {'$set': {'status': 'error'}})
         # print('Unable to configure main master!')
@@ -59,7 +61,7 @@ def config_main_master(ip, ha_ip):
 def join_masters(ha_ip, ips, ip_list):
     try:
         log.info(f'Going to join other masters...')
-        command = "ansible-playbook /app/playbooks/join-master.yml -e 'ha_ip=%s' -i %s" % (ha_ip, ips)
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/join-master.yml -e 'ha_ip={ha_ip}' -e 'TEMP_DIR={consts.TEMP_DIR}' -i {ips}"
         log.info(command)
         # print(command)
         if ips != ",":
@@ -67,7 +69,7 @@ def join_masters(ha_ip, ips, ip_list):
             log.debug(f'Ansible command is done, Output is: {output}')
             col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
     except:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
         col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}}, multi=True)
         # print('Error while configuring other masters!')
         # PrintException()
@@ -76,11 +78,6 @@ def join_masters(ha_ip, ips, ip_list):
 def config_master(cluster_name, ha_ip):
     try:
         main_master, masters, main_master_configured = get_masters(cluster_name)
-        # print(masters)
-        # print(main_master)
-        # if main_master == {}:
-        #     logger.info('No unconfigured main master detected!')
-        # print(main_master_configured)
         if main_master_configured:
             log.info('Main master already configured!')
         else:
@@ -112,20 +109,20 @@ def config_master(cluster_name, ha_ip):
         get_token(main_master['ip'])
         join_masters(ha_ip, ips, ip_list)
     except:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
         # PrintException()
   
 
 def get_token(main_master_ip):
     try:
         log.info(f'Going to get a token from {main_master_ip}...')
-        command = "ansible-playbook /app/playbooks/token.yml -i ubuntu@%s," % main_master_ip
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/token.yml -e 'TEMP_DIR={consts.TEMP_DIR}' -i ubuntu@%s," % main_master_ip
         log.info(command)
         output = subprocess.check_output(command, shell=True).decode()
         log.debug(f'Ansible command is done, Output is: {output}')
         # print(output)
     except Exception as e:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
 
 
 def join_workers(cluster_name):
@@ -144,22 +141,23 @@ def join_workers(cluster_name):
             ips = ""
             ip_list = []
             for worker in servers:
-                ips += worker['ip'] + ","
+                ips += 'ubuntu@' + worker['ip'] + ","
                 ip_list.append(worker['ip'])
             col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'pending'}}, multi=True)
             try:
                 if ips != ",":
-                    command = "ansible-playbook /app/playbooks/join-worker.yml -i ubuntu@%s" % ips
+                    log.debug(ips)
+                    command = f"ansible-playbook {consts.PLAYBOOK_DIR}/join-worker.yml -e 'TEMP_DIR={consts.TEMP_DIR}' -i {ips}"
                     log.info(command)
                     output = subprocess.check_output(command, shell=True).decode()
                     log.debug(f'Ansible command is done, Output is: {output}')
                     col_server.update({'ip': {'$in': ip_list}}, {'$set': {'status': 'done'}}, multi=True)
             except Exception as e:
-                log.error(f'Error while getting server_id: {str(e)}')
+                log.error(f'Error while getting server_id: {ExceptionLine()}')
                 # cluster_error = True
                 col_server.update_many({'ip': {'$in': ip_list}}, {'$set': {'status': 'error'}})
     except Exception as e:
-        log.error(f'Error while getting server_id: {str(e)}')
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
         # print('Error while joining workers!')
         # PrintException()
 
@@ -189,10 +187,11 @@ for cluster in col_cluster.find():
                     log.info('HA has been configured')
                 else:
                     log.error('HA Can not be configured!')
+                    exit()
             else:
                 log.info('HA is done or pending!')
         except Exception as e:
-            log.error(f'Error while getting server_id: {str(e)}')
+            log.error(f'Error while getting server_id: {ExceptionLine()}')
             cluster_error = True
             #TODO Good to have error message here
             # print(str(e))
@@ -202,8 +201,8 @@ for cluster in col_cluster.find():
         #get_token()
         #config_other_masters()
         join_workers(cluster['name'])
-    except:
-        log.error(f'Error while getting server_id: {str(e)}')
+    except Exception as e:
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
         cluster_error = True
     cluster_status = 'error' if cluster_error else 'done'
     col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': cluster_status}})

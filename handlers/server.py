@@ -1,16 +1,16 @@
+import os
+import subprocess
+import sys
 from base_handler import BaseHandler
-from publics import create_md5, decode_token, encode_token
-from datetime import datetime
-import subprocess, sys, os
 
 
 class Server(BaseHandler):
     def init_method(self):
         self.required = {
-            'post': ['name', 'cluster_name', 'flavor_id'],
+            'post': ['name', 'cluster_name', 'flavor_id', 'platform'],
         }
         self.inputs = {
-            'post': ['ip', 'status', 'name', 'cluster', 'role', 'cluster_name', 'flavor_id'],
+            'post': ['ip', 'status', 'name', 'cluster', 'role', 'cluster_name', 'flavor_id', 'platform'],
         }
         self.tokenless = True
         self.casting['lists'] = ['server_ips']

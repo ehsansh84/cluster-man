@@ -1,17 +1,20 @@
-from base_handler import BaseHandler
-from publics import create_md5, decode_token, encode_token
+import os
+import subprocess
+import sys
 from datetime import datetime
-import sys, os, subprocess
-import threading
+
+from base_handler import BaseHandler
+from log_tools import log
+from publics import PrintException
 
 
 class Cluster(BaseHandler):
     def init_method(self):
         self.required = {
-            'post': ['master_count', 'worker_count', 'name'],
+            'post': ['master_count', 'worker_count', 'name', 'platform'],
         }
         self.inputs = {
-            'post': ['master_count', 'worker_count', 'name'],
+            'post': ['master_count', 'worker_count', 'name', 'platform'],
         }
         self.casting['ints'] = ['master_count', 'worker_count']
         self.tokenless = True
@@ -27,7 +30,6 @@ class Cluster(BaseHandler):
     def after_post(self):
         col_cluster = self.db['cluster']
         col_server = self.db['server']
-        #result = col_cluster.find({'status': 'unconfigured'})
         for i in range(self.params['master_count']):
             if i == 0:
                 role = 'main_master'
@@ -37,6 +39,7 @@ class Cluster(BaseHandler):
                 'name': self.params['name'] + '_' + 'master' + str(i),
                 'status': 'unconfigured',
                 'cluster_name': self.params['name'],
+                'platform': self.params['platform'],
                 'ip': '',
                 'role': role,
 		'flavor_id': self.params['masters_flavor_id'],
@@ -51,6 +54,7 @@ class Cluster(BaseHandler):
                 'name': self.params['name'] + '_' + 'worker' + str(i),
                 'status': 'unconfigured',
                 'cluster_name': self.params['name'],
+                'platform': self.params['platform'],
                 'ip': '',
                 'role': 'worker',
 		'flavor_id': self.params['workers_flavor_id'],
@@ -58,13 +62,14 @@ class Cluster(BaseHandler):
                 'create_date': datetime.now(),
                 'last_update': datetime.now()
         })
-        
+
         # if self.params['master_count'] > 1:
         print('CREATE an HA')
         col_server.insert({
             'name': self.params['name'] + '_' + 'masters_ha',
             'status': 'unconfigured',
             'cluster_name': self.params['name'],
+            'platform': self.params['platform'],
             'ip': '',
             'role': 'ha',
             'flavor_id': self.params['masters_flavor_id'],
@@ -76,7 +81,6 @@ class Cluster(BaseHandler):
 
     def before_put(self):
         if 'install' in self.params:
-            print('YES!')
             self.allow_action = False
             if self.params['install'] == 'helm':
               try:

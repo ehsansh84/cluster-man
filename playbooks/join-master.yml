@@ -3,6 +3,6 @@
   become: yes
   tasks:
   - name: Copying token to master nodes
-    copy: src=/temp/joinmaster.sh dest=joinmaster.sh
+    copy: src={{ TEMP_DIR }}/joinmaster.sh dest=joinmaster.sh
   - name: join
     shell: sh joinmaster.sh

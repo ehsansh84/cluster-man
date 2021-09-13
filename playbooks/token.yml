@@ -8,11 +8,11 @@
     - debug:
         var: output.stdout
     - name: save token to join a new worker
-      local_action: copy content={{ output.stdout }} dest=/temp/joinworker.sh
+      local_action: copy content={{ output.stdout }} dest={{ TEMP_DIR}}/joinworker.sh
 
     - name: get certs
       shell: kubeadm init phase upload-certs --upload-certs
       register: cert_output
     - name: Save token to join a new master
-      local_action: copy content="{{ output.stdout  }} --control-plane --certificate-key {{ cert_output.stdout_lines[-1] }}" dest=/temp/joinmaster.sh
+      local_action: copy content="{{ output.stdout  }} --control-plane --certificate-key {{ cert_output.stdout_lines[-1] }}" dest={{ TEMP_DIR}}/joinmaster.sh
 

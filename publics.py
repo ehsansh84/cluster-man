@@ -1,15 +1,7 @@
 import sys, os
 sys.path.append('/root/dev/app')
-#db_name = 'db_name'
 from consts import consts
-# import logging as l
 from log_tools import log
-# import logging
-# logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-#     datefmt='%Y-%m-%d:%H:%M:%S',
-#     level=logging.DEBUG)
-#
-# logger = logging.getLogger(__name__)
 
 
 def PrintException():
@@ -23,6 +15,18 @@ def PrintException():
     line = linecache.getline(filename, lineno, f.f_globals)
     log.error('EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj))
     # return 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+
+
+def ExceptionLine():
+    import linecache
+    import sys
+    exc_type, exc_obj, tb = sys.exc_info()
+    f = tb.tb_frame
+    lineno = tb.tb_lineno
+    filename = f.f_code.co_filename
+    linecache.checkcache(filename)
+    line = linecache.getline(filename, lineno, f.f_globals)
+    return f"{filename}:{lineno} => {line.strip()}"
 
 
 def set_db(name):
@@ -43,7 +47,9 @@ def db():
     try:
         from pymongo import MongoClient
         MONGO_CONNECTION = os.getenv('MONGO')
-        con = MongoClient('mongodb://' + MONGO_CONNECTION)
+        # log.info(f'MONGO_CONNECTION: {MONGO_CONNECTION}')
+        con = MongoClient('mongodb://localhost:27021')
+        # con = MongoClient('mongodb://' + MONGO_CONNECTION)
         return con[consts.DB_NAME]
     except:
         PrintException()
@@ -94,20 +100,6 @@ def load_notifications():
     return notifications
 
 
-# def create_md5(str):
-#     import hashlib
-#     ps = hashlib.md5()
-#     ps.update(str)
-#     _hash = ps.hexdigest()
-#     ps = hashlib.sha1()
-#     ps.update(str)
-#     _hash += ps.hexdigest()[:18:-1]
-#     _hash = _hash[::-1]
-#     ps = hashlib.new('ripemd160')
-#     ps.update(_hash)
-#     return ps.hexdigest()[3:40]
-
-
 def create_md5(s, encoding='utf-8'):
     from hashlib import md5
     return md5(s.encode(encoding)).hexdigest()
@@ -130,14 +122,26 @@ def decode_token(token):
     return result
 
 
-def random_str(length):
-    import random, string
-    return ''.join(random.choice(string.lowercase) for i in range(length))
-
-
 def log_status(l):
     from datetime import datetime
     col = db()['logs']
     del l['date']
     l['date'] = datetime.now()
     col.insert(l)
+
+
+def get_platform_data(name):
+    try:
+        from json import load
+        # f = open(f'/app/daemons/openstack/{name}.json')
+        # import os
+        # log.info(os.getcwd())
+        f = open(f'/home/ehsan/dev/cluster-man/daemons/openstack/{name}.json')
+        data = load(f)
+        f.close()
+        log.info(f'Platform data loaded for {name}')
+        return data
+    except Exception as e:
+        PrintException()
+        log.error(f'Getting platform data failed! {str(e)}')
+        return None

@@ -52,12 +52,13 @@ col_server = db['server']
 #  col_cluster.update_one({'_id': cluster['_id']}, {'$set': {'status': 'pending'}})
 
 import base64
+from consts import consts
 
 os.environ["OS_DOMAIN_ID"] = "default"
 os.environ["OS_DOMAIN_NAME"] = "default"
 
 for server in col_server.find({'ip': ''}):
-  command = "ansible-playbook /app/playbooks/tabriz_node.yml -e 'name=%s flavor_id=%s'" % (server['name'],server['flavor_id'])
+  command = f"ansible-playbook {consts.PLAYBOOK_DIR}/tabriz_node.yml -e 'name=%s flavor_id=%s'" % (server['name'],server['flavor_id'])
   print(command)
   user_data = base64.b64decode(server['user_data'])
   f = open('/temp/user_data.yml', 'w')

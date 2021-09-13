@@ -11,3 +11,11 @@ log = logging.getLogger('pythonConfig')
 log.setLevel(LOG_LEVEL)
 log.addHandler(stream)
 
+
+
+
+# from systemd.journal import JournalHandler
+# log = logging.getLogger('demo')
+# log.addHandler(JournalHandler())
+# log.setLevel(logging.INFO)
+# log.info("sent to journal")

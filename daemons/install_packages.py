@@ -1,6 +1,7 @@
 import os
 import re, sys
 import subprocess
+from consts import consts
 sys.path.append('/app')
 from datetime import datetime
 from functions.ha import config_ha
@@ -23,9 +24,9 @@ col_ha = db['ha']
 
 def install_helm():
   #print(cluster_infoter(ter(ter() 
-      print(cluster_info['masters'][0]['ip'])
+      # print(cluster_info['masters'][0]['ip'])
       try:
-        command = "ansible-playbook /app/playbooks/install-helm.yml -i %s," % cluster_info['masters'][0]['ip']
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/install-helm.yml -i %s," % cluster_info['masters'][0]['ip']
         print(command)
         output = subprocess.check_output(command, shell=True).decode()
         print(output)

@@ -6,12 +6,12 @@
       package:
         name: haproxy
     - template:
-        src: "/temp/haproxy.cfg"
+        src: "{{ TEMP_DIR }}/haproxy.cfg"
         dest: "/etc/haproxy/haproxy.cfg"
     - name: systemctl restart
       systemd: name=systemd-resolved state=restarted         
     - template:
-        src: "/temp/hosts"
+        src: "{{ TEMP_DIR }}/hosts"
         dest: "/etc/hosts"
     - name: systemctl restart
       systemd: name=haproxy state=restarted         
