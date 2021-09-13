@@ -15,13 +15,11 @@ class Log(BaseHandler):
         self.tokenless = True
         self.casting['ints'] = ['number']
 
-    def before_get(self):
+    def get(self, *args, **kwargs):
         try:
             number = 10 if self.params.get('number') == None else self.params.get('number')
             output = subprocess.check_output(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG", shell=True).decode()
-            self.output = output
+            self.write(output)
         except:
             pass
-        self.allow_action = False
-        return True
 
