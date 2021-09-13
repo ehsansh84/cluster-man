@@ -3,6 +3,7 @@ import subprocess
 import sys
 sys.path.append('/app')
 sys.path.append('/home/ehsan/dev/cluster-man/')
+sys.path.append('/home/ubuntu/dev/cluster-man/')
 from consts import consts
 from functions.ha import config_ha
 import urllib3

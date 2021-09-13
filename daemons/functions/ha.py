@@ -14,11 +14,11 @@ import sys, os, subprocess
 def create_ha_config(ha, masters):
     try:
       # f = open('/app/templates/haproxy/body.tmpl')
-      f = open(f'/home/ehsan/dev/cluster-man/templates/haproxy/body.tmpl')
+      f = open(f'{consts.PROJECT_DIR}/templates/haproxy/body.tmpl')
       body_template = f.read()
       f.close()
       # f = open('/app/templates/haproxy/head.tmpl')
-      f = open('/home/ehsan/dev/cluster-man/templates/haproxy/head.tmpl')
+      f = open(f'{consts.PROJECT_DIR}/templates/haproxy/head.tmpl')
       head_template = f.read()
       f.close()
     

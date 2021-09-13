@@ -1,6 +1,7 @@
 import sys
 sys.path.append('/app')
 sys.path.append('/home/ehsan/dev/cluster-man/')
+sys.path.append('/home/ubuntu/dev/cluster-man/')
 import json
 import requests
 from publics import consts, PrintException, get_platform_data, ExceptionLine

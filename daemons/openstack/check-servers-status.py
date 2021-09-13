@@ -5,6 +5,7 @@ from publics import PrintException
 
 sys.path.append('/app')
 sys.path.append('/home/ehsan/dev/cluster-man/')
+sys.path.append('/home/ubuntu/dev/cluster-man/')
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from publics import db, get_platform_data

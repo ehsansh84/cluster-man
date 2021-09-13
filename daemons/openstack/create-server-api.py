@@ -1,5 +1,6 @@
 import sys
 sys.path.append('/home/ehsan/dev/cluster-man/')
+sys.path.append('/home/ubuntu/dev/cluster-man/')
 sys.path.append('/app')
 import threading
 import requests
