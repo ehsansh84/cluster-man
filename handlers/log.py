@@ -19,6 +19,9 @@ class Log(BaseHandler):
         try:
             number = 10 if self.params.get('number') == None else self.params.get('number')
             output = subprocess.check_output(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG", shell=True).decode()
+            print(output)
+
+            self.write('WTF?')
             self.write(output)
         except:
             pass
