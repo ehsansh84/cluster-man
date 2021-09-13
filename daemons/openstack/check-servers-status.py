@@ -51,3 +51,4 @@ for server in col_server.find({'status': {'$in': ['creating', '']}}):
         log.error(f'Error while getting server_id: {str(e)}')
         PrintException()
 
+log.info(f'Checking status daemon is finished...')
