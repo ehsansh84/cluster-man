@@ -3,6 +3,7 @@ import subprocess
 import sys
 from base_handler import BaseHandler
 from log_tools import log
+from publics import PrintException
 
 
 class Log(BaseHandler):
@@ -28,5 +29,5 @@ class Log(BaseHandler):
             self.write('WTF?')
             self.write(output)
         except:
-            pass
+            PrintException()
 
