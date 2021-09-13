@@ -17,12 +17,13 @@ class Log(BaseHandler):
         self.casting['ints'] = ['number']
 
     def get(self, *args, **kwargs):
-        print("Start")
+        # print("Start")
         log.info('Start')
         try:
             number = 10 if self.params.get('number') == None else self.params.get('number')
+            log.info(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG")
             output = subprocess.check_output(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG", shell=True).decode()
-            print(output)
+            log.info('output')
 
             self.write('WTF?')
             self.write(output)
