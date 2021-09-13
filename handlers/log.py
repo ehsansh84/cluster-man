@@ -21,6 +21,7 @@ class Log(BaseHandler):
         # print("Start")
         log.info('Start')
         try:
+            self.params = {k: self.get_argument(k) for k in self.request.arguments}
             number = 10 if self.params.get('number') == None else self.params.get('number')
             log.info(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG")
             output = subprocess.check_output(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG", shell=True).decode()
