@@ -7,3 +7,4 @@ temp/*
 playbooks/tabriz_node.yml
 afranet.json
 tabriz.json
+id_rsa

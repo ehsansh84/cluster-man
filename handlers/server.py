@@ -2,6 +2,9 @@ import os
 import subprocess
 import sys
 from base_handler import BaseHandler
+from bson import ObjectId
+from log_tools import log
+from consts import consts
 
 
 class Server(BaseHandler):
@@ -14,6 +17,23 @@ class Server(BaseHandler):
         }
         self.tokenless = True
         self.casting['lists'] = ['server_ips']
+    
+    def before_delete(self, id):
+        col_server = self.db['server']
+        server_info = col_server.find_one({'_id': ObjectId(id)})
+        log.debug(server_info)
+        ip = server_info['ip']
+        log.info(f'Going to delete node named {server_info["name"]}')
+        os.system(' ssh-keygen -f "/home/ubuntu/.ssh/known_hosts" -R "%s"' % ip)
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/delete-node.yml -e NODE_NAME={server_info['name']} -i ubuntu@{ip},"
+        log.info(command)
+        output = subprocess.check_output(command, shell=True).decode()
+        log.debug(f'Ansible command is done, Output is: {output}')
+        col_server.update_one({'ip': ip}, {'$set': {'status': 'done'}})
+        log.info('Node has been deleted!')
+        
+        self.fail()
+        return False
 
     def before_post(self):
         if 'ip' not in self.params:

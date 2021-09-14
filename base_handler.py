@@ -27,6 +27,7 @@ Since KM2: change log :
 25- Python 3
 26- .success and .fail added
 27- not token is guest now
+28- delete now uses /id
 '''
 import inspect
 import json
@@ -39,6 +40,7 @@ from publics import db, decode_token
 from consts import consts
 # from json import dumps
 from bson.json_util import dumps
+from log_tools import log
 
 
 def __enum(**named_values):
@@ -343,8 +345,8 @@ class BaseHandler(RequestHandler):
             return False
         return True
 
-    def delete_validation_check(self):
-        if not 'id' in self.params.keys():
+    def delete_validation_check(self, id):
+        if id is None:
             self.set_output('field_error', 'delete_id')
             return False
         return True
@@ -730,7 +732,7 @@ class BaseHandler(RequestHandler):
             self.fail()
         self.kmwrite()
 
-    def pre_delete(self):
+    def pre_delete(self, id):
         self.Print('%s fired' % inspect.stack()[0][3], Colors.GRAY)
         self.module = self.request.uri.split('/')[2].split('?')[0]
         try:
@@ -741,31 +743,32 @@ class BaseHandler(RequestHandler):
                         if self.load_permissions():
                             self.method_access_control()
                 if self.status:
-                    if self.delete_validation_check():
+                    #if self.delete_validation_check():
                         if self.data_casting():
                             if 'conditions' in self.params:
                                 self.conditions = self.params['conditions']
                                 del self.params['conditions']
                             if not self.tokenless:
                                 self.add_user_data()
-                            if self.before_delete():
+                            if self.before_delete(id):
                                 return True
         except:
             self.PrintException()
         return False
 
-    def before_delete(self):
+    def before_delete(self, id):
         return True
 
-    def delete(self, *args, **kwargs):
+    def delete(self, id=None, *args, **kwargs):
         try:
             self.method = 'delete'
             self.module = self.request.uri.split('/')[2].split('?')[0]
-            if self.pre_delete():
+            if self.pre_delete(id):
                 if self.allow_action:
                     col = db()[self.module]
+                    log.info(f"ID: {id}")
                     if self.logical_delete:
-                        results = col.update_one({'_id': ObjectId(self.params['id'])},
+                        results = col.update_one({'_id': ObjectId(id)},
                                                      {'$set': {'deleted': True}}).raw_result
                         if results['nModified'] == 1:
                             # self.set_output('public_operations', 'successful')
@@ -774,7 +777,7 @@ class BaseHandler(RequestHandler):
                             self.set_output('public_operations', 'record_not_found')
                     else:
                         if self.conditions == {}:
-                            self.conditions = {'_id': ObjectId(self.params['id'])}
+                            self.conditions = {'_id': ObjectId(id)}
                         results = col.remove(self.conditions)
                         if results['n'] == 1:
                             # self.set_output('public_operations', 'successful')

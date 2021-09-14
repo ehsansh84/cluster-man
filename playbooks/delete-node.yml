@@ -1,0 +1,8 @@
+- name: Delete a node
+  hosts: all 
+  become: yes
+  tasks:
+  - name: Drain
+    shell: kubectl drain {{ NODE_NAME }} --kubeconfig /etc/kubernetes/admin.conf --ignore-daemonsets
+  - name: Delete
+    shell: kubectl delete node {{ NODE_NAME  }} --kubeconfig /etc/kubernetes/admin.conf
