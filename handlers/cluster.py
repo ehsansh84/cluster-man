@@ -128,5 +128,7 @@ class Cluster(BaseHandler):
             log.debug({'cluster_name': cluster_info['name']})
             log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
             log.info('Servers deleted')
+            return True
         except Exception as e:
             log.error(f'Can not delete servers for this cluster {str(e)}')
+            return False
