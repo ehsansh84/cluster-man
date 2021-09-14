@@ -122,7 +122,8 @@ class Cluster(BaseHandler):
             cluster_info = col_cluster.find_one({'_id': ObjectId(self.id)})
             col_server = self.db['server']
             log.info('Start deleting servers')
+            log.debug({'cluster_name': cluster_info['name']})
             log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
             log.info('Servers deleted')
         except Exception as e:
-            log.error('Can not delete servers for this cluster')
+            log.error(f'Can not delete servers for this cluster {str(e)}')
