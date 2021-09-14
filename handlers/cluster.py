@@ -117,7 +117,7 @@ class Cluster(BaseHandler):
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
 
-    def after_delete(self):
+    def before_delete(self, id):
         try:
             col_cluster = self.db['cluster']
             cluster_info = col_cluster.find_one({'_id': ObjectId(self.id)})
