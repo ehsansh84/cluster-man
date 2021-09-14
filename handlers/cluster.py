@@ -7,6 +7,7 @@ from base_handler import BaseHandler
 from log_tools import log
 from publics import PrintException
 from bson import ObjectId
+from consts import consts
 
 
 class Cluster(BaseHandler):
@@ -88,7 +89,7 @@ class Cluster(BaseHandler):
                 col_server = self.db['server']
                 main_master = col_server.find_one({'role': 'main_master', 'cluster_name': self.params['cluster_name']})
                 if main_master is not None:
-                    command = "ansible-playbook /app/playbooks/install-helm.yml -i ubuntu@%s," % main_master['ip']
+                    command = f"ansible-playbook {consts.PLAYBOOK_DIR}/install-helm.yml -i ubuntu@%s," % main_master['ip']
                     print(command)
                     output = subprocess.check_output(command, shell=True).decode()
                     print(output)
@@ -120,8 +121,10 @@ class Cluster(BaseHandler):
         try:
             col_cluster = self.db['cluster']
             cluster_info = col_cluster.find_one({'_id': ObjectId(self.id)})
+            log.debug({'cluster_query': {'_id': ObjectId(self.id)}})
             col_server = self.db['server']
             log.info('Start deleting servers')
+            log.debug({'cluster_name': cluster_info})
             log.debug({'cluster_name': cluster_info['name']})
             log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
             log.info('Servers deleted')
