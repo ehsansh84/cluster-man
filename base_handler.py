@@ -28,6 +28,7 @@ Since KM2: change log :
 26- .success and .fail added
 27- not token is guest now
 28- delete now uses /id
+29- update now uses /id
 '''
 import inspect
 import json
@@ -177,7 +178,7 @@ class BaseHandler(RequestHandler):
             'status': self.status,
             'http_code': self.status_code,
             'output': self.output,
-            'method': self.method,
+            'method': self.request.method,
             'url': self.request.uri,
         })
         try:
@@ -220,7 +221,7 @@ class BaseHandler(RequestHandler):
 
     def load_permissions(self):
         try:
-            ol_users = db()['users']
+            col_users = db()['users']
             user_info = col_users.find_one({'_id': ObjectId(self.user_id)})
             if user_info is None:
                 self.set_output('user', 'user_not_exists')
@@ -252,22 +253,27 @@ class BaseHandler(RequestHandler):
         return self.status
 
     def method_access_control(self):
-        if self.permissions is None:
-            self.set_output('user', 'permission_not_defined')
-        else:
-            if self.method == '':
-                self.set_output('user', 'method_not_specified')
-            elif self.method in self.permissions['allow']:
-                self.set_output('user', 'access_granted')
+        try:
+            if self.permissions is None:
+                self.set_output('user', 'permission_not_defined')
             else:
-                self.set_output('user', 'access_denied')
+                # if self.method == '':
+                #     self.set_output('user', 'method_not_specified')
+                #TODO: better to insert uppercase in db
+                if self.request.method.lower() in self.permissions['allow']:
+                    self.set_output('user', 'access_granted')
+                else:
+                    self.set_output('user', 'access_denied')
+        except Exception as e:
+            log.error(f'Failed {str(e)}')
+            self.fail()
         return self.status
 
     def load_params(self):
         try:
-            if self.method == '':
-                self.set_output('user', 'method_not_specified')
-            elif self.method == 'get':
+            # if self.method == '':
+            #     self.set_output('user', 'method_not_specified')
+            if self.request.method == 'GET':
                 self.params = {k: self.get_argument(k) for k in self.request.arguments}
                 self.original_params = deepcopy(self.params)
                 if 'fields' in self.params:
@@ -276,7 +282,7 @@ class BaseHandler(RequestHandler):
                 if 'sort' in self.params:
                     self.sort = json.loads(self.params['sort'])
                     del self.params['sort']
-            elif self.method in ['post', 'put', 'delete']:
+            elif self.request.method in ['POST', 'PUT', 'DELETE']:
                 self.params = json.loads(self.request.body)
                 self.original_params = deepcopy(self.params)
             if 'locale' in self.params:
@@ -298,6 +304,24 @@ class BaseHandler(RequestHandler):
                 self.inputs['delete'].extend(['id', 'conditions'])
             else:
                 self.inputs['delete'] = ['id', 'conditions']
+            if 'conditions' in self.params:
+                temp_conditions = self.params['conditions']
+                del self.params['conditions']
+                for k, v in temp_conditions.items():
+                    if v in [None, 'null']:
+                        self.set_output('field_error', 'null')
+                        return True
+                self.conditions = temp_conditions
+            params = {}
+            for k, v in self.params.items():
+                if v in [None, 'null']:
+                    self.set_output('field_error', 'null')
+                    return False
+                if k in self.multilingual:
+                    params[k + '.' + self.locale] = v
+                else:
+                    params[k] = v
+                self.params = params
             self.set_output('public_operations', 'params_loaded')
         except:
             self.PrintException()
@@ -357,13 +381,13 @@ class BaseHandler(RequestHandler):
             self.casting['dics'].extend(['conditions'])
             self.casting['lists'].extend(['fields'])
             self.casting['dates'].extend(['create_date', 'last_update'])
-            if self.method in ['post', 'put']:
+            if self.request.method in ['POST', 'PUT']:
                 pass
             for item in self.params.keys():
                 if item in self.casting['ints']:
                     self.params[item] = int(self.params[item])
                 elif item in self.casting['dics']:
-                    if self.method == 'get':
+                    if self.request.method == 'GET':
                         self.params[item] = json.loads(self.params[item])
                 elif item in self.casting['floats']:
                     self.params[item] = float(self.params[item])
@@ -439,23 +463,23 @@ class BaseHandler(RequestHandler):
 
     def add_user_data(self):
         try:
-            if self.method in ['get']:
+            if self.request.method in ['GET']:
                 self.conditions.update(self.permissions[self.method])
                 if 'doc_limit' in self.permissions: self.doc_limit = self.permissions['doc_limit']
-            elif self.method == 'post':
+            elif self.request.method == 'POST':
                 for item in self.params.keys():
                     if item in self.auto_fields:
                         del self.params[item]
-                self.params.update(self.permissions[self.method])
-            elif self.method == 'delete':
-                self.params.update(self.permissions[self.method])
-            elif self.method == 'put':
+                self.params.update(self.permissions[self.request.method])
+            elif self.request.method == 'DELETE':
+                self.params.update(self.permissions[self.request.method])
+            elif self.request.method == 'PUT':
                 temp_params = {}
                 for item in self.params.keys():
                     if item not in self.auto_fields:
                         temp_params[item] = self.params[item]
                 self.params = temp_params
-                self.params.update(self.permissions[self.method]['set'])
+                self.params.update(self.permissions[self.request.method]['set'])
         except:
             self.PrintException()
 
@@ -645,86 +669,98 @@ class BaseHandler(RequestHandler):
     def after_post(self):
         return True
 
-    def pre_put(self):
-        try:
-            self.module = self.request.uri.split('/')[2].split('?')[0]
-            self.init_method()
-            if self.load_params():
-                if not self.tokenless:
-                    if self.token_validation():
-                        if self.load_permissions():
-                            if self.method_access_control():
-                                self.add_user_data()
-            if self.status:
-                if self.put_validation_check():
-                    if self.data_casting():
-                        if self.before_put():
-                            return True
-        except:
-            self.PrintException()
-        return False
+    # def pre_put(self):
+    #     try:
+    #         # self.module = self.request.uri.split('/')[2].split('?')[0]
+    #         # self.init_method()
+    #         # if self.load_params():
+    #         #     if not self.tokenless:
+    #         #         if self.token_validation():
+    #         #             if self.load_permissions():
+    #         #                 if self.method_access_control():
+    #         #                     self.add_user_data()
+    #         #         else:
+    #         #             log.error('Token is not valid!')
+    #         # else:
+    #         #     log.error('Params can not be loaded')
+    #         if self.status:
+    #             if self.put_validation_check():
+    #                 # if self.data_casting():
+    #                     if self.before_put():
+    #                         return True
+    #             #         else:
+    #             #             log.error('An error in before_put!')
+    #             #     else:
+    #             #         log.error('An error in data_casting!')
+    #             # else:
+    #             #     log.error('An error in put_validation_check!')
+    #     except:
+    #         self.PrintException()
+    #         log.error('An error in pre_put!')
+    #     return False
 
     def after_put(self):
         return True
 
-    def put(self, *args, **kwargs):
+    def http_init(self, id):
+        self.module = self.request.uri.split('/')[2].split('?')[0]
+        #TODO: check for id format
+        if id is not None:
+            self.id = ObjectId(id)
+        self.init_method()
+        if not self.load_params():
+            return False
+        log.debug('Params loaded')
+        self.data_casting()
+        log.debug('Data casted')
+        if not self.tokenless:
+            log.debug("It's not tokenless")
+            if not (self.token_validation() and self.load_permissions() and self.method_access_control() and self.add_user_data()):
+                return False
+        return True
+
+    def put(self,id=None, *args, **kwargs):
         try:
-            self.method = 'put'
-            self.module = self.request.uri.split('/')[2].split('?')[0]
-            if self.pre_put():
-                # TODO: Remove this code after some time, only for null values sent by retards
-                if self.allow_action:
-                    has_null = False
-                    params = {}
-                    for k, v in self.params.items():
-                        if v in [None, 'null']:
-                            self.set_output('field_error', 'null')
-                            has_null = True
-                            break
-                        if k in self.multilingual:
-                            params[k + '.' + self.locale] = v
-                            # self.params[k + '.' + self.locale] = v
-                            # del self.params[k]
-                        else:
-                            params[k] = v
-                        self.params = params
-
-                    for k, v in self.conditions.items():
-                        if v in [None, 'null']:
-                            self.set_output('field_error', 'null')
-                            has_null = True
-                            # break
-                    if not has_null:
-                        if 'create_date' in self.params: del self.params['create_date']
-                        self.params['last_update'] = datetime.now()
-                        col = db()[self.module]
-                        if self.conditions == {}:
-                            id = self.params['id']
-                            del self.params['id']
-                            try:
-                                id = ObjectId(id) if self.module != 'achievements' else id
-                                query = {'_id': id}
-                            except:
-                                self.set_output('field_error', 'id_format')
-                                self.PrintException()
-                                return
-                        else:
-                            query = self.conditions
-                        if not self.tokenless:
-                            if 'put' in self.permissions:
-                                query.update(self.permissions['put']['query'])
-                        results = col.update_one(query, {'$set': self.params}).raw_result
-
-                        if self.conditions == {}:
-                            self.params['id'] = id
-                        if results['nModified'] > 0:
-                            # self.set_output('public_operations', 'successful')
-                            self.success()
-                        elif results['updatedExisting']:
-                            # self.set_output('public_operations', 'update_failed')
-                            self.fail()
-                        else:
-                            self.set_output('public_operations', 'record_not_found')
+            if self.http_init(id):
+                log.debug("http_init done!")
+                if self.put_validation_check():
+                    log.debug("put_validation_check done!")
+                    if self.before_put():
+                        log.debug("before_put done!")
+                        # TODO: Remove this code after some time, only for null values sent by retards
+                        if self.allow_action:
+                            log.debug("action allowed!")
+                            if 'create_date' in self.params: del self.params['create_date']
+                            self.params['last_update'] = datetime.now()
+                            col = db()[self.module]
+                            query = {}
+                            results = ''
+                            if not self.tokenless:
+                                if 'PUT' in self.permissions:
+                                    query.update(self.permissions['PUT']['query'])
+                            if self.id is None:
+                                if self.conditions == {}:
+                                    log.error('No ID and No conditions!')
+                                    self.fail()
+                                    #TODO: end this
+                                else:
+                                    query = self.conditions
+                                    log.debug(self.conditions)
+                                    results = col.update(query, {'$set': self.params}, multi=True)
+                            else:
+                                query = {'_id': self.id}
+                                log.debug(query)
+                                results = col.update_one(query, {'$set': self.params}).raw_result
+                            log.debug(results)
+                            if results != '':
+                                if results['nModified'] > 0:
+                                    self.success()
+                                elif results['updatedExisting']:
+                                    self.fail()
+                                else:
+                                    self.set_output('public_operations', 'record_not_found')
+            else:
+                log.error('An error happend in pre_put level!')
             self.after_put()
         except:
             self.PrintException()
@@ -732,65 +768,114 @@ class BaseHandler(RequestHandler):
             self.fail()
         self.kmwrite()
 
-    def pre_delete(self):
-        self.Print('%s fired' % inspect.stack()[0][3], Colors.GRAY)
-        self.module = self.request.uri.split('/')[2].split('?')[0]
-        try:
-            self.init_method()
-            if self.load_params():
-                if not self.tokenless:
-                    if self.token_validation():
-                        if self.load_permissions():
-                            self.method_access_control()
-                if self.status:
-                    #if self.delete_validation_check():
-                        if self.data_casting():
-                            if 'conditions' in self.params:
-                                self.conditions = self.params['conditions']
-                                del self.params['conditions']
-                            if not self.tokenless:
-                                self.add_user_data()
-                            if self.before_delete(id):
-                                return True
-        except:
-            self.PrintException()
-        return False
+    # def pre_delete(self):
+    #     # self.Print('%s fired' % inspect.stack()[0][3], Colors.GRAY)
+    #     # self.module = self.request.uri.split('/')[2].split('?')[0]
+    #     try:
+    #         # self.init_method()
+    #         # if self.load_params():
+    #         #     if not self.tokenless:
+    #         #         if self.token_validation():
+    #         #             if self.load_permissions():
+    #         #                 self.method_access_control()
+    #             if self.status:
+    #                 #if self.delete_validation_check():
+    #                     # if self.data_casting():
+    #                     #     if 'conditions' in self.params:
+    #                     #         self.conditions = self.params['conditions']
+    #                     #         del self.params['conditions']
+    #                         # if not self.tokenless:
+    #                         #     self.add_user_data()
+    #                         if self.before_delete(id):
+    #                             return True
+    #     except:
+    #         self.PrintException()
+    #     return False
 
-    def before_delete(self, id):
+    def before_delete(self):
         return True
 
     def delete(self, id=None, *args, **kwargs):
         try:
-            self.method = 'delete'
-            self.module = self.request.uri.split('/')[2].split('?')[0]
-            self.id = id
-            if self.pre_delete():
-                if self.allow_action:
-                    col = db()[self.module]
-                    log.info(f"ID: {self.id}")
-                    if self.logical_delete:
-                        results = col.update_one({'_id': ObjectId(id)},
-                                                     {'$set': {'deleted': True}}).raw_result
-                        if results['nModified'] == 1:
-                            # self.set_output('public_operations', 'successful')
-                            self.success()
+            if self.http_init(id):
+            # self.method = 'delete'
+            # self.module = self.request.uri.split('/')[2].split('?')[0]
+            # self.id = id
+                if self.before_delete():
+                    # return True
+                # if self.pre_delete():
+                    if self.allow_action:
+                        col = db()[self.module]
+                        log.info(f"ID: {self.id}")
+                        if self.logical_delete:
+                            results = col.update_one({'_id': self.id},
+                                                         {'$set': {'deleted': True}}).raw_result
+                            if results['nModified'] == 1:
+                                self.success()
+                            else:
+                                self.set_output('public_operations', 'record_not_found')
                         else:
-                            self.set_output('public_operations', 'record_not_found')
-                    else:
-                        if self.conditions == {}:
-                            self.conditions = {'_id': ObjectId(id)}
-                        results = col.remove(self.conditions)
-                        if results['n'] == 1:
-                            # self.set_output('public_operations', 'successful')
-                            self.success()
-                        else:
-                            self.set_output('public_operations', 'record_not_found')
-                    self.after_delete()
+                            query = {}
+                            results = ''
+                            if not self.tokenless:
+                                if 'DELETE' in self.permissions:
+                                    query.update(self.permissions['DELETE'])
+                            if self.id is None:
+                                if self.conditions == {}:
+                                    log.error('No ID and No conditions!')
+                                    self.fail()
+                                    #TODO: end this
+                                else:
+                                    query = self.conditions
+                                    log.debug(self.conditions)
+                                    results = col.remove(query)
+                            else:
+                                query = {'_id': self.id}
+                                log.debug(query)
+                                results = col.delete_one(query).raw_result
+                            log.debug(f"results=> {results}")
+                            if results != '':
+                                if results['n'] >= 1:
+                                    self.success()
+                                else:
+                                    self.set_output('public_operations', 'record_not_found')
+                        self.after_delete()
         except:
             self.PrintException()
-            # self.set_output('public_operations', 'failed')
             self.fail()
         self.kmwrite()
+    # def delete(self, id=None, *args, **kwargs):
+    #     try:
+    #         self.method = 'delete'
+    #         self.module = self.request.uri.split('/')[2].split('?')[0]
+    #         self.id = id
+    #         if self.pre_delete():
+    #             if self.allow_action:
+    #                 col = db()[self.module]
+    #                 log.info(f"ID: {self.id}")
+    #                 if self.logical_delete:
+    #                     results = col.update_one({'_id': ObjectId(id)},
+    #                                                  {'$set': {'deleted': True}}).raw_result
+    #                     if results['nModified'] == 1:
+    #                         # self.set_output('public_operations', 'successful')
+    #                         self.success()
+    #                     else:
+    #                         self.set_output('public_operations', 'record_not_found')
+    #                 else:
+    #                     if self.conditions == {}:
+    #                         self.conditions = {'_id': ObjectId(id)}
+    #                     results = col.remove(self.conditions)
+    #                     if results['n'] == 1:
+    #                         # self.set_output('public_operations', 'successful')
+    #                         self.success()
+    #                     else:
+    #                         self.set_output('public_operations', 'record_not_found')
+    #                 self.after_delete()
+    #     except:
+    #         self.PrintException()
+    #         # self.set_output('public_operations', 'failed')
+    #         self.fail()
+    #     self.kmwrite()
 
     def after_delete(self):
         return True

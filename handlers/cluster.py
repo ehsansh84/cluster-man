@@ -82,46 +82,56 @@ class Cluster(BaseHandler):
         col_cluster.update_one({'name': self.params['name']}, {'$set': {'status': 'pending'}})
 
     def before_put(self):
-        if 'install' in self.params:
-            self.allow_action = False
-            if self.params['install'] == 'helm':
-              try:
-                col_server = self.db['server']
-                main_master = col_server.find_one({'role': 'main_master', 'cluster_name': self.params['cluster_name']})
-                if main_master is not None:
-                    command = f"ansible-playbook {consts.PLAYBOOK_DIR}/install-helm.yml -i ubuntu@%s," % main_master['ip']
-                    print(command)
-                    output = subprocess.check_output(command, shell=True).decode()
-                    print(output)
-                    self.success()
-                else:
-                    print("Main master not found!")
-              except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
-            elif self.params['install'] == 'traefik':
-              try:
-                col_server = self.db['server']
-                main_master = col_server.find_one({'role': 'main_master', 'cluster_name': self.params['cluster_name']})
-                if main_master is not None:
-                    command = "ansible-playbook /app/playbooks/install-traefik.yml -i ubuntu@%s," % main_master['ip']
-                    print(command)
-                    output = subprocess.check_output(command, shell=True).decode()
-                    print(output)
-                    self.success()
-                else:
-                    print("Main master not found!")
-              except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
+        try:
+            if 'install' in self.params:
+                self.allow_action = False
+                if self.params['install'] == 'helm':
+                    try:
+                        log.info('Going to install helm...')
+                        col_server = self.db['server']
+                        main_master = col_server.find_one(
+                            {'role': 'main_master', 'cluster_name': self.params['cluster_name']})
+                        if main_master is not None:
+                            command = f"ansible-playbook {consts.PLAYBOOK_DIR}/install-helm.yml -i ubuntu@%s," % \
+                                      main_master['ip']
+                            log.debug(command)
+                            output = subprocess.check_output(command, shell=True).decode()
+                            log.debug(output)
+                            self.success()
+                        else:
+                            print("Main master not found!")
+                    except Exception as e:
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print(exc_type, fname, exc_tb.tb_lineno)
+                elif self.params['install'] == 'traefik':
+                    try:
+                        col_server = self.db['server']
+                        main_master = col_server.find_one(
+                            {'role': 'main_master', 'cluster_name': self.params['cluster_name']})
+                        if main_master is not None:
+                            command = "ansible-playbook /app/playbooks/install-traefik.yml -i ubuntu@%s," % main_master[
+                                'ip']
+                            print(command)
+                            output = subprocess.check_output(command, shell=True).decode()
+                            print(output)
+                            self.success()
+                        else:
+                            print("Main master not found!")
+                    except Exception as e:
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print(exc_type, fname, exc_tb.tb_lineno)
+            return True
+        except Exception as e:
+            log.error(f'Failed {str(e)}')
+            return False
 
-    def before_delete(self, id):
+    def before_delete(self):
         try:
             col_cluster = self.db['cluster']
-            cluster_info = col_cluster.find_one({'_id': ObjectId(self.id)})
-            log.debug({'cluster_query': {'_id': ObjectId(self.id)}})
+            cluster_info = col_cluster.find_one({'_id': self.id})
+            log.debug({'cluster_query': {'_id': self.id}})
             col_server = self.db['server']
             log.info('Start deleting servers')
             log.debug({'cluster_name': cluster_info})

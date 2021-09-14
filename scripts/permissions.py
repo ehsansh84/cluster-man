@@ -11,7 +11,7 @@ col_users_roles.insert_many([
         'name': 'admin',
         'module': 'users',
         'permissions': {
-            'allow': ['get'],
+            'allow': ['GET'],
             'get': {}
         },
     },
@@ -19,7 +19,7 @@ col_users_roles.insert_many([
         'name': 'user',
         'module': 'profile',
         'permissions': {
-            'allow': ['get', 'put'],
+            'allow': ['GET', 'PUT'],
             'get': {'user_id':'$uid'},
             'put': {
                 'query': {'user_id':'$uid'},

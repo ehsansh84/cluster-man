@@ -24,9 +24,7 @@ if __name__ == "__main__":
     app = tornado.web.Application(url_patterns)
     https_app = tornado.httpserver.HTTPServer(app)
     # set_db(consts.DB_NAME)
-    print('YES')
     if os.getenv('MONGO'):
-        print('NO')
         consts.MESSAGES = load_messages()
         consts.NOTIFICATIONS = load_notifications()
         app.listen(int(consts.SERVER_PORT))
