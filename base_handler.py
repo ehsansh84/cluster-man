@@ -732,7 +732,7 @@ class BaseHandler(RequestHandler):
             self.fail()
         self.kmwrite()
 
-    def pre_delete(self, id):
+    def pre_delete(self):
         self.Print('%s fired' % inspect.stack()[0][3], Colors.GRAY)
         self.module = self.request.uri.split('/')[2].split('?')[0]
         try:
@@ -763,10 +763,11 @@ class BaseHandler(RequestHandler):
         try:
             self.method = 'delete'
             self.module = self.request.uri.split('/')[2].split('?')[0]
-            if self.pre_delete(id):
+            self.id = id
+            if self.pre_delete():
                 if self.allow_action:
                     col = db()[self.module]
-                    log.info(f"ID: {id}")
+                    log.info(f"ID: {self.id}")
                     if self.logical_delete:
                         results = col.update_one({'_id': ObjectId(id)},
                                                      {'$set': {'deleted': True}}).raw_result

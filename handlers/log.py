@@ -26,8 +26,6 @@ class Log(BaseHandler):
             log.info(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG")
             output = subprocess.check_output(f"tail  -n {number}  /home/ubuntu/log/cron/{self.params['name']}.log | grep -v DEBUG", shell=True).decode()
             log.info('output')
-
-            self.write('WTF?')
             self.write(output)
         except:
             PrintException()

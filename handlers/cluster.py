@@ -6,6 +6,7 @@ from datetime import datetime
 from base_handler import BaseHandler
 from log_tools import log
 from publics import PrintException
+from bson import ObjectId
 
 
 class Cluster(BaseHandler):
@@ -114,3 +115,14 @@ class Cluster(BaseHandler):
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
+
+    def after_delete(self):
+        try:
+            col_cluster = self.db['cluster']
+            cluster_info = col_cluster.find_one({'_id': ObjectId(self.id)})
+            col_server = self.db['server']
+            log.info('Start deleting servers')
+            log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
+            log.info('Servers deleted')
+        except Exception as e:
+            log.error('Can not delete servers for this cluster')
