@@ -134,10 +134,11 @@ class Cluster(BaseHandler):
             log.debug({'cluster_query': {'_id': self.id}})
             col_server = self.db['server']
             log.info('Start deleting servers')
-            log.debug({'cluster_name': cluster_info})
-            log.debug({'cluster_name': cluster_info['name']})
-            log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
-            log.info('Servers deleted')
+            # log.debug({'cluster_name': cluster_info})
+            # log.debug({'cluster_name': cluster_info['name']})
+            # log.debug(col_server.remove({'cluster_name': cluster_info['name']}))
+            log.debug(col_server.update_many({'cluster_name': cluster_info['name']}, {'$set': {'status': 'deleting'}}).raw_result)
+            # log.info('Servers deleted')
             return True
         except Exception as e:
             log.error(f'Can not delete servers for this cluster {str(e)}')

@@ -39,11 +39,11 @@ for server in col_server.find({'status': {'$in': ['creating', '']}}):
         base_url = "https://%s:8774/v2.1" % platform_data[platform]['server_ip']
         log.info(f'Checking a server status for: {server["name"]}')
         status_url = f"{base_url}/servers/{server['server_id']}"
-        log.info(f'Calling {status_url} with headers: {headers}')
+        # log.info(f'Calling {status_url} with headers: {headers}')
         r = requests.get(status_url, headers=headers, verify=False)
         response = r.json()
         log.info(f'Request is done with the status code {r.status_code}')
-        log.debug(f'Response: {response}')
+        # log.debug(f'Response: {response}')
         r = response['server']
         ip = r['addresses'][platform_data[server['platform']]['network_name']][0]['addr']
         col_server.update_one({'_id': server['_id']}, {'$set': {'status': 'ip', 'ip': ip}})
