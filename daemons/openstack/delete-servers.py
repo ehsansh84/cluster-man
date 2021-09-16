@@ -29,6 +29,7 @@ def delete_server(platform, token, server_id):
         log.debug(f'Response is {r.text}')
         # response = r.json()
         # log.debug(response)
+        col_server.remove({'server_id': server_id})
     except Exception as e:
         log.error(f'Error while creating server: {ExceptionLine()} {str(e)}')
 
@@ -47,10 +48,10 @@ for server in col_server.find({'status': 'deleting'}):
         if platform not in platform_data.keys():
             platform_data[platform] = get_platform_data(platform)
         log.debug(server['name'])
-        delete_server(platform, tokens[platform], server['server_id'], )
-        # x = threading.Thread(target=delete_server,
-        #                      args=(server['platform'], tokens[server['platform']], server['server_id'],))
-        # x.start()
+        # delete_server(platform, tokens[platform], server['server_id'], )
+        x = threading.Thread(target=delete_server,
+                             args=(server['platform'], tokens[server['platform']], server['server_id'],))
+        x.start()
     except Exception as e:
         log.error(f'Error while getting server_id: {ExceptionLine()} {str(e)}')
         PrintException()

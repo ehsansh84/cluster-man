@@ -34,7 +34,7 @@ for server in col_server.find({'status': {'$in': ['creating', '']}}):
             tokens[platform] = get_token(platform)
         if platform not in platform_data.keys():
             platform_data[platform] = get_platform_data(platform)
-        log.info(f'{platform_data}')
+        # log.info(f'{platform_data}')
         headers = {"X-Auth-Token": tokens[server['platform']], "Content-Type": "application/json"}
         base_url = "https://%s:8774/v2.1" % platform_data[platform]['server_ip']
         log.info(f'Checking a server status for: {server["name"]}')

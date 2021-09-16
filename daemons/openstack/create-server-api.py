@@ -33,7 +33,7 @@ def create_server(platform, token, _id, name, flavor_id, user_data):
     headers = {"X-Auth-Token": token, "Content-Type": "application/json"}
     try:
         log.info(f'Making a request to {link}')
-        # log.debug(f'With params {params} and headers {headers}')
+        log.debug(f'With params {params} and headers {headers}')
         r = requests.post(
             link, json=params, headers=headers, verify=False
         )
