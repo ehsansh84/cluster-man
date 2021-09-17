@@ -1,0 +1,329 @@
+swagger: "2.0"
+info:
+  description: "This is the documentation for `Cluster manager` APIs."
+  version: "1.0.0"
+  title: "Cluster Manager"
+  termsOfService: ""
+  contact:
+    email: "ehsan.shirzadi@gmail.com"
+host: "prod.doomain.ir"
+basePath: "/v1"
+tags:
+- name: "cluster"
+  description: "Everything about your Cluaster"
+  externalDocs:
+    description: "Find out more"
+    url: "http://swagger.io"
+
+schemes:
+- "https"
+- "http"
+paths:
+  /cluster:
+    post:
+      tags:
+      - "cluster"
+      summary: "Add a new cluster"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Cluster object that needs to be created. After creating a cluster, all servers will be created in database and there are a few daemons responsible to create VPS ans cluster configurations."
+        required: true
+        schema:
+          $ref: "#/definitions/Cluster"
+      responses:
+        "405":
+          description: "Invalid input"
+    put:
+      tags:
+      - "cluster"
+      summary: "Update an existing cluster"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Cluster object that needs to be edited"
+        required: true
+        schema:
+          $ref: "#/definitions/Cluster"
+      responses:
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Cluster not found"
+        "405":
+          description: "Validation exception"
+  /cluster/{cluster_id}:
+    get:
+      tags:
+      - "cluster"
+      summary: "Find a cluster by Id"
+      description: "Returns a single cluster"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cluster_id"
+        in: "path"
+        description: "ID of cluster to return"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Cluster"
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Cluster not found"
+    put:
+      tags:
+      - "cluster"
+      summary: "Updates a cluster"
+      description: ""
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cluster_id"
+        in: "path"
+        description: "ID of cluster that needs to be updated"
+        required: true
+        type: "string"
+      - name: "name"
+        in: "body"
+        description: "Updated name of the cluster"
+        required: false
+        schema:
+          $ref: "#/definitions/Cluster"
+      responses:
+        "405":
+          description: "Invalid input"
+    delete:
+      tags:
+      - "cluster"
+      summary: "Deletes a cluster"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "cluster_id"
+        in: "path"
+        description: "Cluster id to delete"
+        required: true
+        type: "string"
+      responses:
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Cluster not found"
+
+
+
+
+
+  /server:
+    post:
+      tags:
+      - "server"
+      summary: "Add a new cluster"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Cluster object that needs to be created. After creating a cluster, all servers will be created in database and there are a few daemons responsible to create VPS ans cluster configurations."
+        required: true
+        schema:
+          $ref: "#/definitions/Server"
+      responses:
+        "405":
+          description: "Invalid input"
+    put:
+      tags:
+      - "server"
+      summary: "Update an existing server"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Server object that needs to be edited"
+        required: true
+        schema:
+          $ref: "#/definitions/Server"
+      responses:
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Server not found"
+        "405":
+          description: "Validation exception"
+
+  /server/{server_id}:
+    get:
+      tags:
+      - "server"
+      summary: "Find a server by Id"
+      description: "Returns a single cluster"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "server_id"
+        in: "path"
+        description: "ID of cluster to return"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Server"
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Server not found"
+    put:
+      tags:
+      - "server"
+      summary: "Updates a server"
+      description: ""
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "server_id"
+        in: "path"
+        description: "ID of server that needs to be updated"
+        required: true
+        type: "string"
+      - name: "name"
+        in: "body"
+        description: "Updated name of the server"
+        required: false
+        schema:
+          $ref: "#/definitions/Server"
+      responses:
+        "405":
+          description: "Invalid input"
+    delete:
+      tags:
+      - "server"
+      summary: "Deletes a server"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "server_id"
+        in: "path"
+        description: "Server id to delete"
+        required: true
+        type: "string"
+      responses:
+        "400":
+          description: "Invalid ID supplied"
+        "404":
+          description: "Server not found"
+
+
+
+definitions:
+  Cluster:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "string"
+      name:
+        type: "string"
+        example: "my_cluster"
+      master_count:
+        type: "integer"
+        format: "int64"
+      worker_count:
+        type: "integer"
+        format: "int64"
+      platform:
+        type: "string"
+        enum:
+          - "tabriz"
+          - "afranet"
+      masters_flavor_id:
+        type: "string"
+        example: "e0791815-4d14-420b-85c0-65bce727fd77"
+      workers_flavor_id:
+        type: "string"
+        example: "d04dcdf3-59d0-435d-8cfc-32e9745e3ccc"
+      masters_user_data:
+        type: "string"
+        format: "string"
+        example: "I2Nsb3VkLWNvbmZpZwpzeXN0ZW1faW5mbzoKICBkZWZhdWx0X3VzZXI6CiAgICBuYW1lOiB1YnVudHUKICAgIGxvY2tfcGFzc3dkOiB0cnVlCiAgICBzdWRvOiBbIkFMTD0oQUxMKSBOT1BBU1NXRDpBTEwiXQpwYXNzd29yZDogaGFzaGVtQDEyMwpjaHBhc3N3ZDogeyBleHBpcmU6IEZhbHNlIH0Kc3NoX3B3YXV0aDogVHJ1ZQogIGFwcGVuZDogdHJ1ZQpwYWNrYWdlX3VwZGF0ZTogdHJ1ZQpwYWNrYWdlX3VwZ3JhZGU6IHRydWUKZGlzYWJsZV9yb290OiBmYWxzZQpwYWNrYWdlczoKICAtIHFlbXUtZ3Vlc3QtYWdlbnQKCnJ1bmNtZDoKICAtIFsgc3lzdGVtY3RsLCBlbmFibGUsIHFlbXUtZ3Vlc3QtYWdlbnQgXQogIC0gWyBzeXN0ZW1jdGwsIHN0YXJ0LCBxZW11LWd1ZXN0LWFnZW50LnNlcnZpY2UgXQo="
+      workers_user_data:
+        type: "string"
+        format: "string"
+        example: "I2Nsb3VkLWNvbmZpZwpzeXN0ZW1faW5mbzoKICBkZWZhdWx0X3VzZXI6CiAgICBuYW1lOiB1YnVudHUKICAgIGxvY2tfcGFzc3dkOiB0cnVlCiAgICBzdWRvOiBbIkFMTD0oQUxMKSBOT1BBU1NXRDpBTEwiXQpwYXNzd29yZDogaGFzaGVtQDEyMwpjaHBhc3N3ZDogeyBleHBpcmU6IEZhbHNlIH0Kc3NoX3B3YXV0aDogVHJ1ZQogIGFwcGVuZDogdHJ1ZQpwYWNrYWdlX3VwZGF0ZTogdHJ1ZQpwYWNrYWdlX3VwZ3JhZGU6IHRydWUKZGlzYWJsZV9yb290OiBmYWxzZQpwYWNrYWdlczoKICAtIHFlbXUtZ3Vlc3QtYWdlbnQKCnJ1bmNtZDoKICAtIFsgc3lzdGVtY3RsLCBlbmFibGUsIHFlbXUtZ3Vlc3QtYWdlbnQgXQogIC0gWyBzeXN0ZW1jdGwsIHN0YXJ0LCBxZW11LWd1ZXN0LWFnZW50LnNlcnZpY2UgXQogIApib290Y21kOgogIC0gWyBjbG91ZC1pbml0LXBlciwgb25jZSwgbW92ZS1zZWNvbmQtaGVhZGVyLCBzZ2Rpc2ssIC0tbW92ZS1zZWNvbmQtaGVhZGVyLCAvZGV2L3ZkYSBdCiAgLSBbIGNsb3VkLWluaXQtcGVyLCBvbmNlLCBjcmVhdGUtY2VwaC1wYXJ0LCBwYXJ0ZWQsIC0tc2NyaXB0LCAvZGV2L3ZkYSwgJ21rcGFydCAyIDM1R0IgLTEnIF0="
+      status:
+        type: "string"
+        description: "Order Status"
+        enum:
+        - "placed"
+        - "approved"
+        - "delivered"
+      complete:
+        type: "boolean"
+        default: false
+    xml:
+      name: "Order"
+
+
+
+
+  Server:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        format: "string"
+      name:
+        type: "string"
+        example: "cluster0_master_server1"
+      cluster_name:
+        type: "string"
+        example: "cluster0"
+      flavor_id:
+        type: "string"
+        example: "e0791815-4d14-420b-85c0-65bce727fd77"
+      platform:
+        type: "string"
+        enum:
+          - "tabriz"
+          - "afranet"
+      user_data:
+        type: "string"
+        format: "string"
+        example: "I2Nsb3VkLWNvbmZpZwpzeXN0ZW1faW5mbzoKICBkZWZhdWx0X3VzZXI6CiAgICBuYW1lOiB1YnVudHUKICAgIGxvY2tfcGFzc3dkOiB0cnVlCiAgICBzdWRvOiBbIkFMTD0oQUxMKSBOT1BBU1NXRDpBTEwiXQpwYXNzd29yZDogaGFzaGVtQDEyMwpjaHBhc3N3ZDogeyBleHBpcmU6IEZhbHNlIH0Kc3NoX3B3YXV0aDogVHJ1ZQogIGFwcGVuZDogdHJ1ZQpwYWNrYWdlX3VwZGF0ZTogdHJ1ZQpwYWNrYWdlX3VwZ3JhZGU6IHRydWUKZGlzYWJsZV9yb290OiBmYWxzZQpwYWNrYWdlczoKICAtIHFlbXUtZ3Vlc3QtYWdlbnQKCnJ1bmNtZDoKICAtIFsgc3lzdGVtY3RsLCBlbmFibGUsIHFlbXUtZ3Vlc3QtYWdlbnQgXQogIC0gWyBzeXN0ZW1jdGwsIHN0YXJ0LCBxZW11LWd1ZXN0LWFnZW50LnNlcnZpY2UgXQo="
+      role:
+        type: "string"
+        format: "string"
+        example: "master"
+
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
