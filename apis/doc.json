@@ -39,6 +39,23 @@ paths:
       responses:
         "405":
           description: "Invalid input"
+    get:
+      tags:
+      - "cluster"
+      summary: "List clusters"
+      description: ""
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        type: "string"
+        name: "conditions"
+        description: "You can list an filter clusters"
+      responses:
+        "405":
+          description: "Invalid input"
     put:
       tags:
       - "cluster"
@@ -50,8 +67,8 @@ paths:
       - "application/json"
       parameters:
       - in: "body"
-        name: "body"
-        description: "Cluster object that needs to be edited"
+        name: "conditions"
+        description: "Cluster object that needs to be edited by conditions"
         required: true
         schema:
           $ref: "#/definitions/Cluster"
