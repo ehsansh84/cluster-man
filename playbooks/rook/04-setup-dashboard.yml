@@ -1,0 +1,29 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Create service file
+    shell: |
+             echo '#service for dashboard config
+             apiVersion: v1
+             kind: Service
+             metadata:
+               name: rook-ceph-mgr-dashboard-external-https
+               namespace: rook-ceph
+               labels:
+                 app: rook-ceph-mgr
+                 rook_cluster: rook-ceph
+             spec:
+               ports:
+               - name: dashboard
+                 port: 8443
+                 protocol: TCP
+                 targetPort: 8443
+                 
+               selector:
+                 app: rook-ceph-mgr
+                 rook_cluster: rook-ceph
+               sessionAffinity: None
+               type: NodePort' > dashboard-external-https.yaml
+  - name: Setting up dashboard
+    shell: kubectl create -f dashboard-external-https.yaml  --kubeconfig /etc/kubernetes/admin.conf

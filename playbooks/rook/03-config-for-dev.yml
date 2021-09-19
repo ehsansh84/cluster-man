@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Name1!
+    shell: kubectl --namespace rook-ceph apply -f rook/cluster/examples/kubernetes/ceph/cluster-test.yaml
+  - name: Name2!
+    shell: kubectl --namespace rook-ceph apply -f rook/cluster/examples/kubernetes/ceph/csi/rbd/storageclass-test.yaml

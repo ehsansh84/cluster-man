@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Name!
+    shell: kubectl --namespace rook-ceph apply -f /root/rook/cluster/examples/kubernetes/ceph/cluster.yaml --kubeconfig /etc/kubernetes/admin.conf
+  - name: create storage class
+    shell: kubectl --namespace rook-ceph apply -f /root/rook/cluster/examples/kubernetes/ceph/csi/rbd/storageclass.yaml --kubeconfig /etc/kubernetes/admin.conf
+
+
+

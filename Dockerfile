@@ -8,6 +8,6 @@ COPY requirements.txt requirements-added.txt /app/
 ENV ANSIBLE_HOST_KEY_CHECKING=False OS_DOMAIN_NAME=default OS_DOMAIN_ID=default
 RUN pip install -r requirements.txt
 RUN pip install -r requirements-added.txt
-COPY templates/id_rsa /root/.ssh/id_rsa
+#COPY templates/id_rsa /root/.ssh/id_rsa
 COPY . /app/
 CMD python boot.py

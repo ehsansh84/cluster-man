@@ -18,11 +18,11 @@ class consts(object):
     TEST_MODE = False
     # SERVER_DATA = 'tabriz.json'
     SERVER_DATA = 'afranet.json'
-    # TEMP_DIR = '/temp'
-    TEMP_DIR = '/home/ehsan/temp'
-    # TEMP_DIR = '/home/ubuntu/temp'
-    PROJECT_DIR = '/home/ehsan/dev/cluster-man'
-    # PROJECT_DIR = '/home/ubuntu/dev/cluster-man'
+    #TEMP_DIR = '/temp'
+    #TEMP_DIR = '/home/ehsan/temp'
+    TEMP_DIR = '/home/ubuntu/temp'
+    #PROJECT_DIR = '/home/ehsan/dev/cluster-man'
+    PROJECT_DIR = '/home/ubuntu/dev/cluster-man'
     # PROJECT_DIR = '/app'
     PLAYBOOK_DIR = PROJECT_DIR + '/playbooks'
 

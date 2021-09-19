@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Add root repository
+    shell: helm repo add rook-release https://charts.rook.io/release
+  - name: Create rook namespace
+    shell: kubectl create namespace rook-ceph --kubeconfig /etc/kubernetes/admin.conf
+  - name: Install rook using helm
+    shell: helm install rook-ceph rook-release/rook-ceph --namespace rook-ceph --version v1.7.3  --kubeconfig /etc/kubernetes/admin.conf

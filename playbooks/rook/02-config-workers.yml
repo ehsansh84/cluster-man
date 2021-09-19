@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: dd
+    shell: dd if=/dev/zero of=/dev/vda2 bs=1M status=progress count=1000
