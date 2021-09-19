@@ -37,7 +37,10 @@ def create_server(platform, token, _id, name, flavor_id, user_data):
         r = requests.post(
             link, json=params, headers=headers, verify=False
         )
-        log.info(f'Request is done and status code is {r.status_code}')
+        if r.status_code < 400:
+            log.info(f'Request is done and status code is {r.status_code}')
+        elif r.status_code < 500:
+            log.error(f'Request is done and status code is {r.status_code}')
         log.debug(f'Response is {r.text}')
         # log.debug(f'Response is {r.json()}')
         response = r.json()

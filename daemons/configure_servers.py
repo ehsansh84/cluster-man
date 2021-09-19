@@ -72,6 +72,7 @@ def config_master(cluster_name, ha_ip):
             log.info('Main master already configured!')
         else:
             config_main_master(main_master['ip'], ha_ip)
+            get_kubeconfig(main_master['ip'], cluster_name)
             main_master = col_server.find_one({'cluster_name': cluster_name, 'role': 'main_master'})
             if main_master is None:
                 log.error('No main master detected!')
@@ -111,6 +112,26 @@ def get_token(main_master_ip):
         log.error(f'Error while getting server_id: {ExceptionLine()}')
 
 
+def get_kubeconfig(main_master_ip, cluster_name):
+    try:
+        log.info(f'Going to get a kube config from {main_master_ip}...')
+        command = f"ansible-playbook {consts.PLAYBOOK_DIR}/get-kubeconfig.yml -e 'TEMP_DIR={consts.TEMP_DIR}' -i ubuntu@%s," % main_master_ip
+        log.info(command)
+        output = subprocess.check_output(command, shell=True).decode()
+        log.debug(f'Ansible command is done, Output is: {output}')
+    except Exception as e:
+        log.error(f'Error while getting server_id: {ExceptionLine()}')
+
+    try:
+        f = open(f'{consts.TEMP_DIR}/kube.conf')
+        data = f.read()
+        f.close()
+        # print(data)
+        col_cluster.update_one({'name': cluster_name}, {'$set': {'kube_config': data}})
+    except Exception as e:
+        log.error(f'Error while Sending data to database: {ExceptionLine()}')
+
+
 def join_workers(cluster_name):
     try:
         log.info(f'Going to get a token from {cluster_name}...')
@@ -142,6 +163,7 @@ def join_workers(cluster_name):
 
 log.info(f'Server configuration daemon is started...')
 
+# exit()
 for cluster in col_cluster.find():
     try:
         cluster_error = False

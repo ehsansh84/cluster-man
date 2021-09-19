@@ -28,7 +28,7 @@ log.info(f'Checking status daemon is started...')
 for server in col_server.find({'status': {'$in': ['creating', '']}}):
     try:
         log.info(f'{server["platform"]}')
-        log.info(f'{platform_data}')
+        # log.info(f'{platform_data}')
         platform = server['platform']
         if platform not in tokens.keys():
             tokens[platform] = get_token(platform)
