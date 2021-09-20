@@ -1,0 +1,3 @@
+* * * * * python /app/daemons/openstack/create-server-api.py >> /var/log/create-server.log 2>&1
+* * * * * python /app/daemons/openstack/check-servers-status.py >> /var/log/check-servers.log 2>&1
+*/5 * * * * python /app/daemons/configure_servers.py >> /var/log/configure_servers.log 2>&1
