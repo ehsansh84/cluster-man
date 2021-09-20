@@ -23,7 +23,7 @@ headers = {"X-Auth-Token": "", "Content-Type": "application/json"}
 col_cluster = db()['cluster']
 col_server = db()['server']
 
-log.info(f'Checking status daemon is started...')
+log.info('Checking status daemon is started...')
 
 for server in col_server.find({'status': {'$in': ['creating', '']}}):
     try:

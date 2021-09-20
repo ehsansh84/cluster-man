@@ -11,7 +11,7 @@ from log_tools import log
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 sys.path.append('/app')
-log.info(f'Create servers daemon is started...')
+log.info('Create servers daemon is started...')
 
 
 def create_server(platform, token, _id, name, flavor_id, user_data):

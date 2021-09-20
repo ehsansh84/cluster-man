@@ -9,4 +9,4 @@ RUN pip install -r requirements-added.txt
 #COPY templates/id_rsa /root/.ssh/id_rsa
 COPY . /app/
 RUN crontab /app/daemons/crontab
-CMD python boot.py
+CMD cron && python boot.py
