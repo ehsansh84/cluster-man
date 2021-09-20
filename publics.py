@@ -38,22 +38,20 @@ def set_test_mode(mode):
     consts.TEST_MODE = mode
 
 
-def es():
-    from elasticsearch import Elasticsearch
-    return Elasticsearch('localhost')
-
-
 def db():
     try:
         from pymongo import MongoClient
         MONGO_CONNECTION = os.getenv('MONGO')
-        # log.info(f'MONGO_CONNECTION: {MONGO_CONNECTION}')
-        con = MongoClient('mongodb://localhost:27021')
-        # con = MongoClient('mongodb://' + MONGO_CONNECTION)
+        log.info(f'MONGO_CONNECTION: {MONGO_CONNECTION}')
+        if MONGO_CONNECTION is None:
+            con = MongoClient(f'mongodb://localhost:{consts.MONGODB_PORT}')
+        else:
+            con = MongoClient('mongodb://' + MONGO_CONNECTION)
         return con[consts.DB_NAME]
     except:
         PrintException()
     return None
+
 
 def localdb():
     try:
@@ -133,9 +131,6 @@ def log_status(l):
 def get_platform_data(name):
     try:
         from json import load
-        # f = open(f'/app/daemons/openstack/{name}.json')
-        # import os
-        # log.info(os.getcwd())
         f = open(f'{consts.PROJECT_DIR}/daemons/openstack/{name}.json')
         data = load(f)
         f.close()

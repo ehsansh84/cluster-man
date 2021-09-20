@@ -2,8 +2,8 @@ import sys
 sys.path.append('/app')
 from publics import db, create_md5, set_db
 from consts import consts
-set_db(consts.DB_NAME)
-print(consts.DB_NAME)
+# set_db(consts.DB_NAME)
+# print(consts.DB_NAME)
 
 def insert_users():
     col_users = db()['users']
